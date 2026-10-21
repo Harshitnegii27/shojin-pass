@@ -29,8 +29,9 @@ Build in stages. Finish one stage, run the tests, show me how to try it locally,
 Commit at the end of a stage only if every test passes. The test count may grow; it must never shrink.
 
 1. Done. Next.js project around the existing code; `/api/health` and `/api/scan/text` (spec 13.1–13.5).
-2. Done. Supabase: `supabase/migrations/001_init.sql` (profiles, scans, scan_feedback), anonymous login with
-   Turnstile, `/api/profile` GET/PUT/DELETE (spec 13.8, 14).
+2. Done (migration applied to the real project; sign-in, saving the diet and a saved scan tested on
+   the laptop, 22 October 2026). Supabase: `supabase/migrations/001_init.sql` (profiles, scans,
+   scan_feedback), anonymous login with Turnstile, `/api/profile` GET/PUT/DELETE (spec 13.8, 14).
 3. Photo scans: `prepareImage`, **Azure AI Vision Read** (Image Analysis 4.0, feature `read`, language `ja`)
    in `readLabel`, `/api/scan`, saving scans (spec 9.1–9.4, 9.12, 13.4). Azure gives confidence per word:
    every character gets its word's confidence. Keys: `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`.
