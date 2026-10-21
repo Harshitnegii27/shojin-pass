@@ -1,0 +1,1701 @@
+[
+ {
+  "id": "N01",
+  "group": "Normalisation",
+  "title": "Half-width katakana is read as normal katakana",
+  "raw": "原材料名：砂糖、ｶﾂｵﾌﾞｼ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "items": [
+    "ｶﾂｵﾌﾞｼ:red"
+   ]
+  }
+ },
+ {
+  "id": "N02",
+  "group": "Normalisation",
+  "title": "A word split across two lines is joined",
+  "raw": "原材料名：砂糖、かつお\n節、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "items": [
+    "かつお節:red"
+   ]
+  }
+ },
+ {
+  "id": "N03",
+  "group": "Normalisation",
+  "title": "Spaced-out field names and full-width spaces",
+  "raw": "原　材　料　名　小麦粉、ラード\n内　容　量　100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "notReasons": [
+    "INCOMPLETE_LIST"
+   ],
+   "items": [
+    "ラード:red"
+   ]
+  }
+ },
+ {
+  "id": "N04",
+  "group": "Normalisation",
+  "title": "OCR reads the long-vowel mark ー as kanji 一",
+  "raw": "原材料名：小麦粉、ラ一ド\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "items": [
+    "らーど:red"
+   ]
+  }
+ },
+ {
+  "id": "N05",
+  "group": "Normalisation",
+  "title": "OCR reads エ as kanji 工",
+  "raw": "原材料名：小麦粉、チキン工キス\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "items": [
+    "ちきんえきす:red"
+   ]
+  }
+ },
+ {
+  "id": "N06",
+  "group": "Normalisation",
+  "title": "OCR reads カ as kanji 力",
+  "raw": "原材料名：砂糖、力ラメル色素\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green",
+   "items": [
+    "からめる色素:green"
+   ]
+  }
+ },
+ {
+  "id": "N07",
+  "group": "Normalisation",
+  "title": "Real kanji next to kanji is not changed (八角 stays star anise)",
+  "raw": "原材料名：砂糖、八角\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green",
+   "items": [
+    "八角:green"
+   ]
+  }
+ },
+ {
+  "id": "N08",
+  "group": "Normalisation",
+  "title": "Real kanji 工 inside 加工 is not changed",
+  "raw": "原材料名：小麦粉、加工でん粉\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "N09",
+  "group": "Normalisation",
+  "title": "Kanji 二 in 二酸化ケイ素 is not changed",
+  "raw": "原材料名：小麦粉、二酸化ケイ素\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "N10",
+  "group": "Normalisation",
+  "title": "Old kanji form 鷄 is read as 鶏",
+  "raw": "原材料名：小麦粉、鷄肉\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "N11",
+  "group": "Normalisation",
+  "title": "Every bracket style; heading-style end field 【内容量】",
+  "raw": "【原材料名】小麦粉、豚脂〔国産〕\n【内容量】100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "notReasons": [
+    "INCOMPLETE_LIST"
+   ]
+  }
+ },
+ {
+  "id": "N12",
+  "group": "Normalisation",
+  "title": "Full-width and ASCII commas both separate items",
+  "raw": "原材料名：小麦粉，砂糖,食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "N13",
+  "group": "Normalisation",
+  "title": "Invisible zero-width character inside a word",
+  "raw": "原材料名：小麦粉、ラ​ード\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "N14",
+  "group": "Normalisation",
+  "title": "Half-width katakana with voiced marks (ﾍﾞｰｺﾝ)",
+  "raw": "原材料名：小麦粉、ﾍﾞｰｺﾝ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "N15",
+  "group": "Normalisation",
+  "title": "Full-width Latin letters (ＤＨＡ)",
+  "raw": "原材料名：小麦粉、ＤＨＡ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "ASK_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "N16",
+  "group": "Normalisation",
+  "title": "pH調整剤 is not mangled by kana conversion",
+  "raw": "原材料名：砂糖、pH調整剤\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "N17",
+  "group": "Normalisation",
+  "title": "L-システイン keeps its hyphen",
+  "raw": "原材料名：小麦粉、L-システイン\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "ASK_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "N18",
+  "group": "Normalisation",
+  "title": "ASCII hyphen after kana becomes a long vowel (ラ-ド)",
+  "raw": "原材料名：小麦粉、ラ-ド\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "L01",
+  "group": "Finding the list",
+  "title": "No heading but a pork list: red wins, and the missing heading is reported",
+  "raw": "小麦粉、砂糖、豚肉、食塩",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "reasons": [
+    "FORBIDDEN_INGREDIENT",
+    "NO_INGREDIENT_LIST"
+   ]
+  }
+ },
+ {
+  "id": "L02",
+  "group": "Finding the list",
+  "title": "No heading and a safe-looking list is never green",
+  "raw": "小麦粉、砂糖、食塩",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENT_LIST"
+   ]
+  }
+ },
+ {
+  "id": "L03",
+  "group": "Finding the list",
+  "title": "Empty text",
+  "raw": "",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENT_LIST"
+   ]
+  }
+ },
+ {
+  "id": "L04",
+  "group": "Finding the list",
+  "title": "原材料の一部に… is not mistaken for the heading",
+  "raw": "本品は原材料の一部に卵を含みます。",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENT_LIST"
+   ]
+  }
+ },
+ {
+  "id": "L05",
+  "group": "Finding the list",
+  "title": "OCR misreads the heading (原材科名)",
+  "raw": "原材科名：豚肉、食塩\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "L06",
+  "group": "Finding the list",
+  "title": "Heading with nothing after it",
+  "raw": "原材料名：\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENTS_FOUND"
+   ]
+  }
+ },
+ {
+  "id": "L07",
+  "group": "Finding the list",
+  "title": "Heading followed only by an origin note",
+  "raw": "原材料名：国産\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENTS_FOUND"
+   ]
+  }
+ },
+ {
+  "id": "L08",
+  "group": "Finding the list",
+  "title": "Two ingredient lists on one label; the second has pork",
+  "raw": "【めん】原材料名：小麦粉、食塩\n【スープ】原材料名：しょうゆ、ポークエキス\n内容量：1食",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "L09",
+  "group": "Finding the list",
+  "title": "Table read column by column (field names first, values later)",
+  "raw": "名称\n原材料名\n内容量\n賞味期限\nクッキー\n小麦粉、砂糖、バター\n100g\n2026.12.01",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "NO_INGREDIENTS_FOUND"
+   ]
+  }
+ },
+ {
+  "id": "L10",
+  "group": "Finding the list",
+  "title": "Column-by-column table hiding lard in the values",
+  "raw": "名称\n原材料名\n内容量\nクッキー\n小麦粉、砂糖、ラード\n100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "OUTSIDE_SECTION_TERM"
+   ]
+  }
+ },
+ {
+  "id": "L11",
+  "group": "Finding the list",
+  "title": "原産国 inside a bracket does not end the list",
+  "raw": "原材料名：小麦粉(原産国：アメリカ)、ラード\n内容量：1袋",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "L12",
+  "group": "Finding the list",
+  "title": "English heading on an import: found, but English words are unknown",
+  "raw": "Ingredients: wheat flour, sugar, lard",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "UNKNOWN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "L13",
+  "group": "Finding the list",
+  "title": "Separate 添加物 field is part of the list",
+  "raw": "原材料名：小麦粉、砂糖\n添加物：膨脹剤、コチニール色素\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "L14",
+  "group": "Finding the list",
+  "title": "Nutrition table after the list is not read as ingredients",
+  "raw": "原材料名：砂糖、食塩\n栄養成分表示(100g当たり)エネルギー：100kcal、たんぱく質1.0g、脂質0g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "C01",
+  "group": "Completeness",
+  "title": "List cut off by the photo edge",
+  "raw": "原材料名：小麦粉、砂糖、植物油脂",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "INCOMPLETE_LIST"
+   ]
+  }
+ },
+ {
+  "id": "C02",
+  "group": "Completeness",
+  "title": "Cut-off list that already shows pork stays red",
+  "raw": "原材料名：小麦粉、豚肉、砂糖",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "reasons": [
+    "FORBIDDEN_INGREDIENT",
+    "INCOMPLETE_LIST"
+   ]
+  }
+ },
+ {
+  "id": "C03",
+  "group": "Completeness",
+  "title": "List ending with the allergen statement counts as complete",
+  "raw": "原材料名：小麦粉、砂糖、食塩(一部に小麦を含む)",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "C04",
+  "group": "Completeness",
+  "title": "List ending in a separator before the next field is incomplete",
+  "raw": "原材料名：小麦粉、砂糖、\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "INCOMPLETE_LIST"
+   ]
+  }
+ },
+ {
+  "id": "C05",
+  "group": "Completeness",
+  "title": "Unbalanced bracket",
+  "raw": "原材料名：小麦粉(国産、砂糖\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "STRUCTURE_UNCLEAR"
+   ]
+  }
+ },
+ {
+  "id": "M01",
+  "group": "Matching",
+  "title": "Longest spelling wins (かつお節エキス is one item)",
+  "raw": "原材料名：かつお節エキス\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red",
+   "items": [
+    "かつお節エキス:red"
+   ]
+  }
+ },
+ {
+  "id": "M02",
+  "group": "Matching",
+  "title": "牛乳 is milk, not beef",
+  "raw": "原材料名：砂糖、牛乳\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green",
+   "items": [
+    "牛乳:green"
+   ]
+  }
+ },
+ {
+  "id": "M03",
+  "group": "Matching",
+  "title": "乳酸菌 and 乳化剤(大豆由来) are not dairy problems",
+  "raw": "原材料名：乳酸菌、乳化剤(大豆由来)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M04a",
+  "group": "Matching",
+  "title": "鶏卵 is egg (red for vegetarian)",
+  "raw": "原材料名：砂糖、鶏卵\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M04b",
+  "group": "Matching",
+  "title": "鶏卵 is egg, not chicken (green for vegetarian_egg)",
+  "raw": "原材料名：砂糖、鶏卵\n内容量：100g",
+  "preset": "vegetarian_egg",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M05",
+  "group": "Matching",
+  "title": "ビーフン (rice noodles) is not beef",
+  "raw": "原材料名：ビーフン、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M06",
+  "group": "Matching",
+  "title": "Cocoa butter and peanut butter are not dairy problems",
+  "raw": "原材料名：カカオバター、ピーナッツバター\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M07a",
+  "group": "Matching",
+  "title": "ブラックタイガー is a prawn",
+  "raw": "原材料名：ブラックタイガー、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M07b",
+  "group": "Matching",
+  "title": "ブラックペッパー is pepper, not lac (ラック)",
+  "raw": "原材料名：小麦粉、ブラックペッパー\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M08",
+  "group": "Matching",
+  "title": "とろろ昆布 is kelp, not yam (strict Jain)",
+  "raw": "原材料名：とろろ昆布、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M09a",
+  "group": "Matching",
+  "title": "きくらげ is a fungus (strict Jain red)",
+  "raw": "原材料名：きくらげ、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M09b",
+  "group": "Matching",
+  "title": "きくらげ is not jellyfish (vegetarian green)",
+  "raw": "原材料名：きくらげ、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M10",
+  "group": "Matching",
+  "title": "ちくわぶ is wheat, not fish cake",
+  "raw": "原材料名：ちくわぶ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M11",
+  "group": "Matching",
+  "title": "酒石酸 is tartaric acid, not alcohol",
+  "raw": "原材料名：砂糖、酒石酸\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M12",
+  "group": "Matching",
+  "title": "大豆ミート is soy, not meat",
+  "raw": "原材料名：大豆ミート、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M13a",
+  "group": "Matching",
+  "title": "Place name 鳥取 is not chicken",
+  "raw": "原材料名：らっきょう(鳥取県産)、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M13b",
+  "group": "Matching",
+  "title": "…but rakkyo is still onion family",
+  "raw": "原材料名：らっきょう(鳥取県産)、食塩\n内容量：100g",
+  "preset": "no_onion_garlic",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M14",
+  "group": "Matching",
+  "title": "たこ焼き粉 usually contains bonito stock",
+  "raw": "原材料名：たこ焼き粉\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M15",
+  "group": "Matching",
+  "title": "タコス is not octopus",
+  "raw": "原材料名：タコス\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "notReasons": [
+    "FORBIDDEN_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "M16",
+  "group": "Matching",
+  "title": "Unknown word containing いか is flagged, not silently passed",
+  "raw": "原材料名：小麦粉、はいかかお\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "UNKNOWN_TERM",
+    "HIDDEN_TERM"
+   ],
+   "hidden": [
+    "いか"
+   ]
+  }
+ },
+ {
+  "id": "M17",
+  "group": "Matching",
+  "title": "グラム (gram) does not contain lamb or rum",
+  "raw": "原材料名：砂糖(10グラム)、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M18a",
+  "group": "Matching",
+  "title": "ラム alone is unclear (rum or lamb): amber for vegetarian",
+  "raw": "原材料名：砂糖、ラム\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M18b",
+  "group": "Matching",
+  "title": "ラム alone: red for strict Jain (could be rum)",
+  "raw": "原材料名：砂糖、ラム\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M19",
+  "group": "Matching",
+  "title": "甘酒 contains alcohol",
+  "raw": "原材料名：甘酒\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M20a",
+  "group": "Matching",
+  "title": "みりん: ask for flexible Jain",
+  "raw": "原材料名：しょうゆ、みりん\n内容量：100g",
+  "preset": "jain_flexible",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M20b",
+  "group": "Matching",
+  "title": "みりん: red for strict Jain",
+  "raw": "原材料名：しょうゆ、みりん\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M21",
+  "group": "Matching",
+  "title": "酒精 (ethanol preservative) is alcohol",
+  "raw": "原材料名：小麦粉、酒精\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M22",
+  "group": "Matching",
+  "title": "かき氷 is shaved ice, not oyster",
+  "raw": "原材料名：かき氷、砂糖\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M23",
+  "group": "Matching",
+  "title": "くらげ is jellyfish",
+  "raw": "原材料名：くらげ、しょうゆ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M24",
+  "group": "Matching",
+  "title": "しらこたん白 (preservative from fish milt)",
+  "raw": "原材料名：小麦粉、しらこたん白\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M25a",
+  "group": "Matching",
+  "title": "紅麹色素 is a koji fungus colour (strict Jain)",
+  "raw": "原材料名：砂糖、紅麹色素\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M25b",
+  "group": "Matching",
+  "title": "紅麹色素 is fine for vegetarians",
+  "raw": "原材料名：砂糖、紅麹色素\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M26",
+  "group": "Matching",
+  "title": "ヘム鉄 comes from blood",
+  "raw": "原材料名：小麦粉、ヘム鉄\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M27",
+  "group": "Matching",
+  "title": "Cochineal and carmine are insect-derived",
+  "raw": "原材料名：砂糖、カルミン酸色素\n内容量：100g",
+  "preset": "vegetarian_egg",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M28",
+  "group": "Matching",
+  "title": "光沢剤 may be shellac",
+  "raw": "原材料名：砂糖、光沢剤\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "ASK_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "M29",
+  "group": "Matching",
+  "title": "Gelatin",
+  "raw": "原材料名：砂糖、ゼラチン\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M30",
+  "group": "Matching",
+  "title": "Cheese may use animal rennet",
+  "raw": "原材料名：小麦粉、チーズ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "ASK_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "M31",
+  "group": "Matching",
+  "title": "Microbial rennet is fine",
+  "raw": "原材料名：生乳、微生物レンネット\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M32",
+  "group": "Matching",
+  "title": "Amounts and percentages are not unknown words",
+  "raw": "原材料名：砂糖(10%)、食塩(1.5g)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M33",
+  "group": "Matching",
+  "title": "Composite with その他 keeps its own doubt",
+  "raw": "原材料名：調味料(しょうゆ、砂糖、その他)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M34",
+  "group": "Matching",
+  "title": "Composite with listed parts is decided by the parts",
+  "raw": "原材料名：調味料(しょうゆ、砂糖)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M35",
+  "group": "Matching",
+  "title": "Composite with a forbidden part",
+  "raw": "原材料名：スープ(チキンエキス、食塩)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M36a",
+  "group": "Matching",
+  "title": "Origin bracket: 香料(乳由来) is dairy",
+  "raw": "原材料名：砂糖、香料(乳由来)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M36b",
+  "group": "Matching",
+  "title": "Origin bracket: 酵素(卵由来) is egg",
+  "raw": "原材料名：砂糖、酵素(卵由来)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M36c",
+  "group": "Matching",
+  "title": "Origin bracket: ゼラチン(豚由来)",
+  "raw": "原材料名：砂糖、ゼラチン(豚由来)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M37",
+  "group": "Matching",
+  "title": "An allergen bracket does not resolve a composite (マーガリン)",
+  "raw": "原材料名：小麦粉、マーガリン(一部に乳成分を含む)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "ASK_INGREDIENT"
+   ]
+  }
+ },
+ {
+  "id": "M38",
+  "group": "Matching",
+  "title": "Negation is never trusted: 卵不使用 stays red",
+  "raw": "原材料名：小麦粉、卵不使用\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M39",
+  "group": "Matching",
+  "title": "Individual allergen note (卵を含む) inside an item",
+  "raw": "原材料名：小麦粉、マヨネーズ(卵を含む)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M40a",
+  "group": "Matching",
+  "title": "Eggplant: ask for strict Jain",
+  "raw": "原材料名：なす、しょうゆ\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M40b",
+  "group": "Matching",
+  "title": "Eggplant: fine for vegetarians",
+  "raw": "原材料名：なす、しょうゆ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M41a",
+  "group": "Matching",
+  "title": "Unspecified starch: ask for strict Jain",
+  "raw": "原材料名：でん粉、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M41b",
+  "group": "Matching",
+  "title": "Starch from corn stated: fine for strict Jain",
+  "raw": "原材料名：でん粉(とうもろこし)、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M42",
+  "group": "Matching",
+  "title": "Cornstarch",
+  "raw": "原材料名：コーンスターチ、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M43a",
+  "group": "Matching",
+  "title": "Dried turmeric: ask for strict Jain",
+  "raw": "原材料名：ターメリック、食塩\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M43b",
+  "group": "Matching",
+  "title": "Dried turmeric: fine for vegetarians",
+  "raw": "原材料名：ターメリック、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M44a",
+  "group": "Matching",
+  "title": "Fresh ginger: red for strict Jain",
+  "raw": "原材料名：しょうが、しょうゆ\n内容量：100g",
+  "preset": "jain_strict",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M44b",
+  "group": "Matching",
+  "title": "Fresh ginger: ask for flexible Jain",
+  "raw": "原材料名：しょうが、しょうゆ\n内容量：100g",
+  "preset": "jain_flexible",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M45",
+  "group": "Matching",
+  "title": "野菜エキス may include onion (no-onion diet)",
+  "raw": "原材料名：食塩、野菜エキス\n内容量：100g",
+  "preset": "no_onion_garlic",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M46a",
+  "group": "Matching",
+  "title": "Spice mix may include garlic",
+  "raw": "原材料名：食塩、香辛料\n内容量：100g",
+  "preset": "no_onion_garlic",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M46b",
+  "group": "Matching",
+  "title": "Spice mix with its parts listed",
+  "raw": "原材料名：食塩、香辛料(こしょう、唐辛子)\n内容量：100g",
+  "preset": "no_onion_garlic",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M47",
+  "group": "Matching",
+  "title": "Honey: red for Jains, fine for vegetarians",
+  "raw": "原材料名：砂糖、はちみつ\n内容量：100g",
+  "preset": "jain_flexible",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M48",
+  "group": "Matching",
+  "title": "エキス alone is unclear",
+  "raw": "原材料名：食塩、エキス\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "M49a",
+  "group": "Matching",
+  "title": "だし(昆布) is kelp stock",
+  "raw": "原材料名：しょうゆ、だし(昆布)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M49b",
+  "group": "Matching",
+  "title": "だし(かつお) is fish stock",
+  "raw": "原材料名：しょうゆ、だし(かつお)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M50",
+  "group": "Matching",
+  "title": "ポン酢 usually contains bonito stock",
+  "raw": "原材料名：ポン酢\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M51",
+  "group": "Matching",
+  "title": "含みます is a phrase, not trout (ます)",
+  "raw": "原材料名：小麦粉、砂糖(一部に小麦を含みます)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green",
+   "notReasons": [
+    "HIDDEN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "M52",
+  "group": "Matching",
+  "title": "かに風味かまぼこ is fish",
+  "raw": "原材料名：かに風味かまぼこ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M53",
+  "group": "Matching",
+  "title": "えびせん: a prawn word inside an unknown word is flagged",
+  "raw": "原材料名：えびせん、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "HIDDEN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "M54",
+  "group": "Matching",
+  "title": "スモークサーモン: salmon found inside a longer word",
+  "raw": "原材料名：スモークサーモン\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M55",
+  "group": "Matching",
+  "title": "Milk, butter and cream are fine for vegetarians",
+  "raw": "原材料名：全粉乳、バター、生クリーム\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "M56",
+  "group": "Matching",
+  "title": "Egg is fine for vegetarian_egg",
+  "raw": "原材料名：卵、マヨネーズ\n内容量：100g",
+  "preset": "vegetarian_egg",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "A01",
+  "group": "Allergen lines and shared lines",
+  "title": "Allergen statement adds egg",
+  "raw": "原材料名：小麦粉、砂糖(一部に卵・乳成分・小麦を含む)",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "A02",
+  "group": "Allergen lines and shared lines",
+  "title": "Separate allergen field is read",
+  "raw": "原材料名：小麦粉、砂糖\nアレルギー物質：卵、乳\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "A03a",
+  "group": "Allergen lines and shared lines",
+  "title": "Shared-line notice is a note by default",
+  "raw": "原材料名：青のり\n内容量：10g\n本品で使用している青のりは、えび・かにが混ざる漁法で採取しています。",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green",
+   "notes": 1
+  }
+ },
+ {
+  "id": "A03b",
+  "group": "Allergen lines and shared lines",
+  "title": "Shared-line notice is amber with avoid_shared_line",
+  "raw": "原材料名：青のり\n内容量：10g\n本品で使用している青のりは、えび・かにが混ざる漁法で採取しています。",
+  "preset": "vegetarian",
+  "options": [
+   "avoid_shared_line"
+  ],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "SHARED_LINE"
+   ]
+  }
+ },
+ {
+  "id": "A04",
+  "group": "Allergen lines and shared lines",
+  "title": "Shared-line words on the same line as the list stay in the list",
+  "raw": "原材料名：青のり、えびと同じ工場で製造\n内容量：10g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "A05",
+  "group": "Allergen lines and shared lines",
+  "title": "Allergen line cannot clear fish stock",
+  "raw": "原材料名：かつおだし(一部に小麦を含む)",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "Q01",
+  "group": "OCR confidence",
+  "title": "Unclear character in a safe ingredient",
+  "raw": "原材料名：小麦粉、砂糖、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "LOW_CONFIDENCE"
+   ]
+  },
+  "confidence": {
+   "low": [
+    "砂糖"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "Q02",
+  "group": "OCR confidence",
+  "title": "Unclear character in a red ingredient stays red",
+  "raw": "原材料名：小麦粉、ラード\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  },
+  "confidence": {
+   "low": [
+    "ラード"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "Q03",
+  "group": "OCR confidence",
+  "title": "Unclear separator could be a hidden letter",
+  "raw": "原材料名：小麦粉、砂糖\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "LOW_CONFIDENCE"
+   ]
+  },
+  "confidence": {
+   "low": [
+    "、"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "Q04",
+  "group": "OCR confidence",
+  "title": "Unclear digits inside the list",
+  "raw": "原材料名：小麦粉(10%)、砂糖\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "LOW_CONFIDENCE"
+   ]
+  },
+  "confidence": {
+   "low": [
+    "10"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "Q05",
+  "group": "OCR confidence",
+  "title": "Unclear text outside the list is ignored",
+  "raw": "原材料名：小麦粉、砂糖\n内容量：100g\n製造者：株式会社テスト",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  },
+  "confidence": {
+   "low": [
+    "株式会社"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "Q06",
+  "group": "OCR confidence",
+  "title": "Misread end field: cannot trust where the list stops",
+  "raw": "原材料名：小麦粉、砂糖\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "INCOMPLETE_LIST"
+   ]
+  },
+  "confidence": {
+   "low": [
+    "内容量"
+   ],
+   "value": 0.3
+  }
+ },
+ {
+  "id": "O01",
+  "group": "Outside the list",
+  "title": "Product name mentions pork",
+  "raw": "名称：ポークカレー\n原材料名：小麦粉、食塩\n内容量：1袋",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "OUTSIDE_SECTION_TERM"
+   ]
+  }
+ },
+ {
+  "id": "O02",
+  "group": "Outside the list",
+  "title": "Company address is not searched",
+  "raw": "原材料名：小麦粉、食塩\n内容量：1袋\n製造者：株式会社牛久食品\n茨城県牛久市",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "O03",
+  "group": "Outside the list",
+  "title": "Nutrition words (たんぱく質) do not trigger warnings",
+  "raw": "原材料名：小麦粉、食塩\n栄養成分表示 たんぱく質 2.0g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "O04",
+  "group": "Outside the list",
+  "title": "Interleaved columns: list ends early and lard appears after",
+  "raw": "原材料名：小麦粉、砂糖、\n内容量：100g\nラード、食塩",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "INCOMPLETE_LIST",
+    "OUTSIDE_SECTION_TERM"
+   ]
+  }
+ },
+ {
+  "id": "P01",
+  "group": "Options",
+  "title": "avoid_fungus makes mushrooms red",
+  "raw": "原材料名：しいたけ、しょうゆ\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [
+   "avoid_fungus"
+  ],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "P02",
+  "group": "Options",
+  "title": "avoid_alcohol makes mirin red",
+  "raw": "原材料名：しょうゆ、みりん\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [
+   "avoid_alcohol"
+  ],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "P03",
+  "group": "Options",
+  "title": "avoid_root_possible questions starch",
+  "raw": "原材料名：でん粉、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [
+   "avoid_root_possible"
+  ],
+  "expect": {
+   "verdict": "amber"
+  }
+ },
+ {
+  "id": "L15",
+  "group": "Finding the list",
+  "title": "List printed elsewhere (枠外に記載) is never green",
+  "raw": "原材料名：枠外下部に記載\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "UNKNOWN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "L16",
+  "group": "Finding the list",
+  "title": "Spaces between heading and list do not hide the first item",
+  "raw": "原材料名 トマト、食塩\n内容量 100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "L17",
+  "group": "Finding the list",
+  "title": "Bare heading 原材料 followed by a line break",
+  "raw": "原材料\nトマト、食塩\n内容量：1",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "A06",
+  "group": "Allergen lines and shared lines",
+  "title": "Allergen field saying none (なし)",
+  "raw": "原材料名：小麦粉、砂糖\nアレルギー物質：なし\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "A07",
+  "group": "Allergen lines and shared lines",
+  "title": "Allergen table wording (28品目中)",
+  "raw": "原材料名：小麦粉、砂糖\n本品に含まれるアレルギー物質(28品目中)：小麦\n内容量：1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "green"
+  }
+ },
+ {
+  "id": "A08",
+  "group": "Allergen lines and shared lines",
+  "title": "Egg given as a conversion note (全卵換算) still counts",
+  "raw": "原材料名：小麦粉、卵加工品(全卵換算)\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M57",
+  "group": "Matching",
+  "title": "OCR look-alike next to a real kanji (生八ム)",
+  "raw": "原材料名：食塩、生八ム\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M58",
+  "group": "Matching",
+  "title": "OCR look-alike right after the heading once spaces are gone (夕ーキー)",
+  "raw": "原 材 料 名 夕ーキー、食塩\n内容量 1個",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ },
+ {
+  "id": "M59",
+  "group": "Matching",
+  "title": "Dropped long-vowel mark (ソセージ) is unknown, never green",
+  "raw": "原材料名：ソセージ、食塩\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "UNKNOWN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "M60",
+  "group": "Matching",
+  "title": "Dropped voiced mark (セラチン for ゼラチン) is unknown, never green",
+  "raw": "原材料名：砂糖、セラチン\n内容量：100g",
+  "preset": "vegetarian",
+  "options": [],
+  "expect": {
+   "verdict": "amber",
+   "reasons": [
+    "UNKNOWN_TERM"
+   ]
+  }
+ },
+ {
+  "id": "M61",
+  "group": "Matching",
+  "title": "Royal jelly misread with 口",
+  "raw": "原材料名：砂糖、口ーヤルゼリー\n内容量：100g",
+  "preset": "jain_flexible",
+  "options": [],
+  "expect": {
+   "verdict": "red"
+  }
+ }
+]

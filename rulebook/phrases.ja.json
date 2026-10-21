@@ -1,0 +1,34 @@
+{
+  "_doc": "Fixed chef-card phrases, one per tag. MUST be checked by a native Japanese speaker before use.",
+  "identity": {
+    "jain": "申し訳ありませんが、私はジャイナ教の菜食主義者です。",
+    "vegetarian": "申し訳ありませんが、私は菜食主義者です。"
+  },
+  "tags": {
+    "meat": "肉類（豚・牛など）・肉エキス",
+    "poultry": "鶏肉・鶏ガラ",
+    "fish_seafood": "魚・魚介類（かつおだし・煮干しなどのだしを含む）",
+    "likely_fish_stock": "魚・魚介類（かつおだし・煮干しなどのだしを含む）",
+    "egg": "卵",
+    "animal_gelatin": "ゼラチン",
+    "animal_fat": "ラード・牛脂などの動物性油脂",
+    "animal_extract": "肉や鶏のエキス・ブイヨン",
+    "insect_derived": "虫由来の色素や光沢剤（コチニール・シェラックなど）",
+    "onion_family": "玉ねぎ・にんにく・ねぎ・にら",
+    "onion_family_possible": "玉ねぎ・にんにくを含む香辛料やエキス",
+    "root_vegetable": "根菜（人参・じゃがいも・大根・しょうがなど）",
+    "root_vegetable_possible": "じゃがいも由来のでん粉など",
+    "dried_rhizome": "ウコン・乾燥しょうが",
+    "jain_sometimes_avoided": "なす・もやし・いちじく",
+    "fungus": "きのこ類・酵母・麹",
+    "honey": "はちみつ",
+    "alcohol": "お酒・みりん・料理酒",
+    "animal_rennet_possible": "動物性レンネットを使ったチーズ"
+  },
+  "endings": { "forbid": "は食べられません。", "ask": "も、できれば避けたいです。", "question": "この料理に入っていますか？" },
+  "buttons": {
+    "contains": { "ja": "かつおだしなどが入っています", "en": "It contains some of these" },
+    "can_make_without": { "ja": "抜いて作れます", "en": "We can make it without them" },
+    "fine": { "ja": "この料理は大丈夫です", "en": "This dish is fine" }
+  }
+}

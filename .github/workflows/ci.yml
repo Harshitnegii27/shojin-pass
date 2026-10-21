@@ -1,0 +1,13 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: node scripts/validateRulebook.js        # use --strict on the release branch
+      - run: npx vitest run                         # unit, edge-case, property and generated tests
+      - run: node scripts/evalText.js

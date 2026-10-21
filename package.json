@@ -1,0 +1,18 @@
+{
+  "name": "shojin-pass",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "validate": "node scripts/validateRulebook.js",
+    "validate:strict": "node scripts/validateRulebook.js --strict",
+    "eval:text": "node scripts/evalText.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  }
+}

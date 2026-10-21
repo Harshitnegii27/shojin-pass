@@ -1,0 +1,32 @@
+{
+  "vegetarian_egg": {
+    "label": { "en": "Vegetarian (eats egg)", "hi": "शाकाहारी (अंडा खाते हैं)", "gu": "શાકાહારી (ઈંડું ખાય છે)" },
+    "forbid": ["meat","poultry","fish_seafood","likely_fish_stock","animal_gelatin","animal_fat","animal_extract","insect_derived"],
+    "ask": ["source_unclear","animal_rennet_possible"],
+    "chefIdentity": "vegetarian", "strictnessRank": 1
+  },
+  "vegetarian": {
+    "label": { "en": "Vegetarian", "hi": "शाकाहारी", "gu": "શાકાહારી" },
+    "forbid": ["meat","poultry","fish_seafood","likely_fish_stock","egg","animal_gelatin","animal_fat","animal_extract","insect_derived"],
+    "ask": ["source_unclear","animal_rennet_possible"],
+    "chefIdentity": "vegetarian", "strictnessRank": 2
+  },
+  "no_onion_garlic": {
+    "label": { "en": "Vegetarian, no onion or garlic", "hi": "शाकाहारी, बिना प्याज़-लहसुन", "gu": "શાકાહારી, ડુંગળી-લસણ વગર" },
+    "forbid": ["meat","poultry","fish_seafood","likely_fish_stock","egg","animal_gelatin","animal_fat","animal_extract","insect_derived","onion_family"],
+    "ask": ["source_unclear","animal_rennet_possible","onion_family_possible"],
+    "chefIdentity": "vegetarian", "strictnessRank": 3
+  },
+  "jain_flexible": {
+    "label": { "en": "Jain (flexible)", "hi": "जैन (लचीला)", "gu": "જૈન (લવચીક)" },
+    "forbid": ["meat","poultry","fish_seafood","likely_fish_stock","egg","animal_gelatin","animal_fat","animal_extract","insect_derived","onion_family","honey"],
+    "ask": ["source_unclear","animal_rennet_possible","onion_family_possible","root_vegetable","root_vegetable_possible","dried_rhizome","jain_sometimes_avoided","fungus","alcohol"],
+    "chefIdentity": "jain", "strictnessRank": 4
+  },
+  "jain_strict": {
+    "label": { "en": "Jain (strict)", "hi": "जैन (सख़्त)", "gu": "જૈન (કડક)" },
+    "forbid": ["meat","poultry","fish_seafood","likely_fish_stock","egg","animal_gelatin","animal_fat","animal_extract","insect_derived","onion_family","honey","root_vegetable","fungus","alcohol"],
+    "ask": ["source_unclear","animal_rennet_possible","onion_family_possible","root_vegetable_possible","dried_rhizome","jain_sometimes_avoided"],
+    "chefIdentity": "jain", "strictnessRank": 5
+  }
+}

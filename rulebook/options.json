@@ -1,0 +1,7 @@
+{
+  "avoid_fungus":         { "label": { "en": "Avoid mushrooms, yeast and koji" }, "forbid": ["fungus"], "ask": [] },
+  "avoid_alcohol":        { "label": { "en": "Avoid alcohol" }, "forbid": ["alcohol"], "ask": [] },
+  "avoid_root_possible":  { "label": { "en": "Also question starch and other possible root-vegetable ingredients" }, "forbid": [], "ask": ["root_vegetable_possible"] },
+  "avoid_shared_line":    { "label": { "en": "Treat 'made on a shared line' notices as a warning" }, "forbid": [], "ask": [], "askSharedLine": true },
+  "no_food_after_sunset": { "label": { "en": "No food after sunset (routes)" }, "forbid": [], "ask": [], "routesOnly": true }
+}
