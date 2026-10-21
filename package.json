@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "vitest run",
     "validate": "node scripts/validateRulebook.js",
     "validate:strict": "node scripts/validateRulebook.js --strict",
@@ -14,5 +17,12 @@
   },
   "devDependencies": {
     "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   }
 }

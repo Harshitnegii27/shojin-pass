@@ -263,6 +263,7 @@ shojin-pass/
 │                                           #        venues/[id]/certification, stats
 ├── lib/
 │   ├── config/env.js                       # reads + validates every setting at startup
+│   ├── config/rulebook.js                  # serverRulebook(): rulebook + RULEBOOK_ALLOW_UNREVIEWED
 │   ├── db/supabaseServer.js                # client acting as the signed-in user
 │   ├── db/supabaseAdmin.js                 # service-role client (server only)
 │   ├── auth/getUser.js                     # { id, role, isAnonymous } or null
@@ -328,7 +329,9 @@ shojin-pass/
 
 # 7. Environment variables and secrets
 
-Every key and tunable number lives in an environment variable. Real values go in `.env.local` (each laptop) and the Vercel dashboard. `.env.example` lists names only. `lib/config/env.js` validates all of them with Zod at startup and stops with a message listing every missing or invalid name.
+Every key and tunable number lives in an environment variable. Real values go in `.env.local` (each laptop) and the Vercel dashboard. `.env.example` lists names only (plus `RULEBOOK_ALLOW_UNREVIEWED=true`, marked as local development only). `lib/config/env.js` validates all of them with Zod at startup and stops with a message listing every invalid name.
+
+**Missing keys (build stage 1 onwards):** tunables always have defaults. Keys and secrets are optional at startup so that endpoints that do not need them (`/api/health`, `/api/scan/text`) run on a laptop with no keys. Code that needs a key calls `requireEnv('NAME', …)` first, which throws listing every missing name. On a Vercel production deploy (`VERCEL_ENV=production`) every name in `REQUIRED_FOR_DEPLOY` is required at startup, and `RULEBOOK_ALLOW_UNREVIEWED=true` stops the server. An empty value (`NAME=`) counts as not set.
 
 | Name | Secret? | What it is | Default / hackathon value |
 |---|---|---|---|
@@ -360,17 +363,20 @@ Every key and tunable number lives in an environment variable. Real values go in
 import 'server-only';
 import { z } from 'zod';
 
-const bool = z.enum(['true', 'false']).transform((v) => v === 'true');
-const num = (d) => z.coerce.number().default(d);
+const unset = (v) => (v === '' ? undefined : v);
+const opt = (schema) => z.preprocess(unset, schema.optional());
+const bool = (d) => z.preprocess(unset, z.enum(['true', 'false']).default(d).transform((v) => v === 'true'));
+const num = (d) => z.preprocess(unset, z.coerce.number().default(d));
 
 const Schema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
-  GOOGLE_VISION_API_KEY: z.string().min(10),
-  LLM_API_KEY: z.string().min(10),
-  LLM_MODEL: z.string().min(3),
-  LLM_ENABLED: bool.default('true'),
+  NEXT_PUBLIC_SUPABASE_URL: opt(z.string().url()),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: opt(z.string().min(20)),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: opt(z.string().min(10)),
+  SUPABASE_SERVICE_ROLE_KEY: opt(z.string().min(20)),
+  GOOGLE_VISION_API_KEY: opt(z.string().min(10)),
+  LLM_API_KEY: opt(z.string().min(10)),
+  LLM_MODEL: opt(z.string().min(3)),
+  LLM_ENABLED: bool('true'),
   LLM_TIMEOUT_MS: num(2000),
   OCR_TIMEOUT_MS: num(4000),
   OCR_MIN_PAGE_CONFIDENCE: num(0.8),
@@ -378,20 +384,40 @@ const Schema = z.object({
   SCAN_RATE_LIMIT_PER_MIN: num(20),
   SCAN_RATE_LIMIT_PER_DAY: num(300),
   IP_RATE_LIMIT_PER_MIN: num(60),
-  STORE_SCAN_IMAGES: bool.default('false'),
+  STORE_SCAN_IMAGES: bool('false'),
   IMAGE_RETENTION_DAYS: num(30),
   SCAN_RETENTION_DAYS: num(90),
-  CRON_SECRET: z.string().min(32),
-  HEALTH_SECRET: z.string().min(32),
+  CRON_SECRET: opt(z.string().min(32)),
+  HEALTH_SECRET: opt(z.string().min(32)),
+  RULEBOOK_ALLOW_UNREVIEWED: bool('false'), // development only (8.5)
 });
+
+export const REQUIRED_FOR_DEPLOY = [
+  'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY', 'GOOGLE_VISION_API_KEY', 'LLM_API_KEY', 'LLM_MODEL',
+  'CRON_SECRET', 'HEALTH_SECRET',
+];
 
 const parsed = Schema.safeParse(process.env);
 if (!parsed.success) {
-  const names = parsed.error.issues.map((i) => i.path.join('.')).join(', ');
+  const names = [...new Set(parsed.error.issues.map((i) => i.path.join('.')))].join(', ');
   throw new Error('Missing or invalid environment variables: ' + names);
 }
 export const env = parsed.data;
+
+export function requireEnv(...names) {
+  const missing = names.filter((n) => env[n] === undefined);
+  if (missing.length) throw new Error('Missing or invalid environment variables: ' + missing.join(', '));
+  return env;
+}
+
+if (process.env.VERCEL_ENV === 'production') {
+  requireEnv(...REQUIRED_FOR_DEPLOY);
+  if (env.RULEBOOK_ALLOW_UNREVIEWED) throw new Error('RULEBOOK_ALLOW_UNREVIEWED must not be true in production');
+}
 ```
+
+The server loads the rulebook through `lib/config/rulebook.js` (`serverRulebook()`), which reads `<project>/rulebook` and passes `env.RULEBOOK_ALLOW_UNREVIEWED` to `buildRulebook()`. The engine's own `getRulebook()` is kept for scripts and tests. `next.config.mjs` includes `rulebook/**/*.json` in every API function's file trace.
 
 **Three rules beginners get wrong:**
 
@@ -848,6 +874,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 - **Error:** `{ "error": { "code": "IMAGE_TOO_LARGE", "message": "Photo must be under 4 MB." }, "meta": { "requestId": "…" } }`.
 - **A verdict is never an error.** `retake` and `amber` return status 200.
 - `requestId` comes from Vercel’s `x-vercel-id` header if present, otherwise `crypto.randomUUID()`.
+- Every JSON reply is sent as `application/json; charset=utf-8` (some clients misread Japanese and Hindi without the charset).
 
 ## 13.2 Error codes (http/errors.js)
 
@@ -942,6 +969,8 @@ export async function POST(req) {
 
 JSON body `{ "text": "原材料名：…", "preset": "vegetarian", "lang": "en" }`; `text` 1–4000 characters. Skips image and OCR steps; confidence is 1.0. Uses the `scan` rate-limit bucket. Uses: building the pipeline before OCR works, the text-mode evaluation, and a stage backup if the camera fails.
 
+> **Build note:** in build stage 1 this endpoint has no session check yet (a TODO in the route file). The session check is added in stage 2 and the rate limit in stage 6. Nothing is deployed before stage 2.
+
 ## 13.6 POST /api/scan/{id}/explain
 
 No body. Owner only (`404 NOT_FOUND` for someone else’s scan, so ids cannot be probed). Response: `{ "scanId": "…", "why": "…", "source": "llm" | "template" }`.
@@ -1016,8 +1045,8 @@ create table public.profiles (
                check (diet_preset in ('vegetarian','vegetarian_egg','no_onion_garlic',
                                       'jain_flexible','jain_strict')),
   options      text[] not null default '{}'
-               check (options <@ array['avoid_fungus','avoid_alcohol','avoid_shared_line',
-                                       'no_food_after_sunset']::text[]),
+               check (options <@ array['avoid_fungus','avoid_alcohol','avoid_root_possible',
+                                       'avoid_shared_line','no_food_after_sunset']::text[]),
   language     text not null default 'en' check (language in ('en','hi','gu')),
   store_photos boolean not null default false,
   role         text not null default 'traveller'
