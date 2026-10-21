@@ -62,6 +62,25 @@ Nothing in v2.1 weakens a v2 rule. All changes either make the engine more cauti
 
 # 2. What changed
 
+## 2.0 Build-plan changes (22 October 2026)
+
+Decided while building the backend in stages (see `CLAUDE.md`). Where this table and an older section disagree, this table wins until that section is rewritten in the stage that builds it.
+
+| # | Change | Why | Where | Stage |
+|---|---|---|---|---|
+| B1 | **Keys optional at startup**; `requireEnv()` where needed; all required on the production deploy | Endpoints that need no keys run on a laptop with none | 7 | 1 |
+| B2 | **`avoid_root_possible`** allowed in `profiles.options` | v2 migration omitted it, so saving it would fail | 14 | 2 |
+| B3 | **Scanning never depends on Supabase.** Session optional for scans; login, Turnstile, profile load or save failures still return the verdict (`scanId: null`), logged | A database outage must not cost a traveller the verdict | 13.1, 14.4 | 2 |
+| B4 | **Diet kept in localStorage** and sent with every scan; no diet and no saved profile → strictest diet (`jain_strict` + `avoid_shared_line`), `dietSource` in the result | A lost diet must never produce a false safe | 13.5, 14.4 | 2 |
+| B5 | **Explicit grants and RLS**; users read/change only their own rows; scans and feedback written only by the server | Project has “Automatically expose new tables” off; users must not forge verdicts | 14 | 2 |
+| B6 | **No photos stored**: no bucket, no `store_photos`, `STORE_SCAN_IMAGES` and `IMAGE_RETENTION_DAYS` removed; scans keep matched ingredients, not label text | Less personal data | 14, 16.2 | 2 |
+| B7 | **OCR is Azure AI Vision Read** (Image Analysis 4.0, feature `read`, language `ja`); each character gets its word's confidence; keys `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY` | Replaces Google Cloud Vision | 3.2, 9.3 | 3 |
+| B8 | **LLM is the Google Gemini API** (key from Google AI Studio). `/api/scan/{id}/explain` as in section 11; no key, disabled, slow or failing → template “why” | Free tier; the explanation never decides or changes a verdict | 3.2, 11 | 4 |
+| B9 | **Venues and routes from JSON files**, not tables | Small, hand-checked data; fewer moving parts | 14.6, 15 | 5 |
+| B10 | **`GET /api/insights`**: verdict-colour counts and the top 10 red ingredients, no user ids | Partner KPIs without personal data | 13.3 | 5 |
+| B11 | **Daily Vercel Cron hits the deep health check**, which queries Supabase (the free project never pauses) and runs retention; simple rate limits; deployment | Free Supabase projects pause when idle | 13.12, 19 | 6 |
+| B12 | Every JSON reply says `charset=utf-8` | Windows PowerShell 5.1 misread Japanese and Hindi | 13.1 | 1 |
+
 ## 2.1 Version 2 → 2.1 (engine built and tested)
 
 Each row is a change made while building the engine. “Why” is the problem it fixes; “Where” is the section that now specifies it; “Test” names the edge cases in section 24 that prove it.
@@ -132,7 +151,7 @@ Every change below came from the v1 review. The “Section” column shows where
 
 # 3. Overview and stack
 
-The backend is one Next.js project written in JavaScript and deployed on Vercel in Tokyo. Supabase (also Tokyo) provides the database, login and photo storage. Google Cloud Vision reads the Japanese label. A small LLM only writes a short “why” sentence. Everything that decides a verdict is plain local JavaScript that runs in milliseconds.
+The backend is one Next.js project written in JavaScript and deployed on Vercel in Tokyo. Supabase (also Tokyo) provides the database and login; no photos are stored. Azure AI Vision Read reads the Japanese label. A small Google Gemini model only writes a short “why” sentence. Everything that decides a verdict is plain local JavaScript that runs in milliseconds.
 
 ## 3.1 The five jobs
 
@@ -150,10 +169,9 @@ The backend is one Next.js project written in JavaScript and deployed on Vercel 
 | Framework | Next.js, App Router, Route Handlers (`runtime = 'nodejs'`) | Screens and API in one project, one deploy |
 | Database | Supabase Postgres, region Tokyo (`ap-northeast-1`) | Relational data, row security, hosted |
 | Login | Supabase Auth, anonymous sign-in, CAPTCHA (Cloudflare Turnstile) | No account needed; bots blocked |
-| Storage | Supabase Storage, private bucket `labels` | Only opted-in photos, deleted after 30 days |
 | Image handling | `sharp` (re-encode, rotate, strip metadata), `file-type` (real file type) | Safe, small, correctly rotated images for OCR |
-| OCR | Google Cloud Vision REST, `DOCUMENT_TEXT_DETECTION`, language hint `ja` | Per-character confidence and positions |
-| LLM | Small, fast model via the provider SDK (e.g. Claude Haiku via `@anthropic-ai/sdk`) | Writes the “why” sentence only |
+| OCR | Azure AI Vision Read (Image Analysis 4.0 REST, feature `read`, language `ja`) | Word confidence (applied to each character of the word) and positions |
+| LLM | Google Gemini API, small fast model (`LLM_MODEL`), key from Google AI Studio | Writes the “why” sentence only; optional |
 | Validation | `zod` | Rejects bad input before any work |
 | Sunset | `suncalc` | Sunset time for the strict Jain route rule |
 | Tests | `vitest` | Unit, invariant and evaluation tests |
@@ -162,8 +180,9 @@ The backend is one Next.js project written in JavaScript and deployed on Vercel 
 ## 3.3 npm packages
 
 ```
-npm install next react react-dom @supabase/supabase-js @supabase/ssr zod sharp file-type suncalc @anthropic-ai/sdk server-only
-npm install -D vitest
+npm install next react react-dom @supabase/supabase-js @supabase/ssr zod sharp file-type suncalc server-only
+npm install -D vitest @electric-sql/pglite
+# Gemini SDK added in stage 4
 ```
 
 > **Note:** `server-only` is imported at the top of every file that touches a secret. If a screen ever imports one of those files by mistake, the build fails instead of leaking the key.
@@ -185,7 +204,7 @@ Every teammate follows these. A pull request that breaks one is not merged.
 
 # 5. Architecture and request lifecycle
 
-Three layers: two apps on the outside (the traveller web app now, an admin screen in the pilot), one Next.js backend in the middle, and three outside services underneath (Supabase, Google Vision, the LLM).
+Three layers: two apps on the outside (the traveller web app now, an admin screen in the pilot), one Next.js backend in the middle, and three outside services underneath (Supabase, Azure AI Vision, the Gemini LLM).
 
 ```
  Traveller app (phone browser)              Admin screen (pilot)
@@ -205,7 +224,7 @@ Three layers: two apps on the outside (the traveller web app now, an admin scree
  +--------------------------------------------------------------+
         |                    |                     |
         v                    v                     v
-   Supabase (Tokyo)     Google Vision         LLM provider
+   Supabase (Tokyo)     Azure AI Vision       Gemini (LLM)
    DB, Auth, Storage    (reads text only)     (explains only)
 ```
 
@@ -214,14 +233,14 @@ Three layers: two apps on the outside (the traveller web app now, an admin scree
 1. The app calls an `/api/...` address with the Supabase session cookie.
 2. The route handler finds the user, applies rate limits, and validates input with Zod.
 3. It calls exactly one function in `lib/`.
-4. That function uses the in-memory rulebook and, only when needed, Supabase, Google Vision or the LLM.
+4. That function uses the in-memory rulebook and, only when needed, Supabase, Azure AI Vision or the LLM.
 5. The handler returns JSON in the standard shape (section 13.1). Non-essential work (event logging) runs after the reply with `after()`.
 
 ## 5.2 The life of a scan, in one line each
 
 1. Phone shrinks the photo and uploads it.
 2. Server checks session, limits, file type and size, then re-encodes the image (metadata removed, rotation fixed).
-3. Google Vision returns text plus a confidence and position for every character.
+3. Azure AI Vision Read returns text plus a confidence per word (given to each of its characters) and positions.
 4. Page-level confidence too low → `retake`.
 5. Text is normalised (width, spaces, brackets, look-alike characters, katakana→hiragana) while remembering where each character came from.
 6. The ingredient list is located; the list is marked complete or incomplete.
@@ -266,7 +285,11 @@ shojin-pass/
 │   ├── config/rulebook.js                  # serverRulebook(): rulebook + RULEBOOK_ALLOW_UNREVIEWED
 │   ├── db/supabaseServer.js                # client acting as the signed-in user
 │   ├── db/supabaseAdmin.js                 # service-role client (server only)
-│   ├── auth/getUser.js                     # { id, role, isAnonymous } or null
+│   ├── db/profiles.js                      # profile read/write with the user's client (RLS)
+│   ├── auth/getUser.js                     # { id, isAnonymous, client } or null; never throws
+│   ├── client/shojinClient.js              # browser: diet in localStorage, sign-in, scans (B3, B4)
+│   ├── http/log.js  http/timeout.js        # one-line error logs; withTimeout, timedFetch
+│   ├── validation/diet.js                  # preset/option names checked against the rulebook
 │   ├── http/respond.js                     # ok(), fail(), handleError()
 │   ├── http/errors.js                      # AppError + error code table
 │   ├── http/rateLimit.js                   # per-user + per-IP sliding window
@@ -283,7 +306,7 @@ shojin-pass/
 │   ├── rulebook/matcher.js                 # BUILT: matching, boundary rule, second reading
 │   ├── rulebook/verdict.js                 # BUILT: THE verdict engine
 │   ├── ocr/index.js                        # readLabel(): provider-neutral
-│   ├── ocr/googleVision.js                 # Vision REST call + per-character confidence
+│   ├── ocr/azureRead.js                    # Azure Read REST call; word confidence -> each character
 │   ├── scan/analyze.js                     # BUILT: the whole pure pipeline for one label
 │   ├── scan/scanText.js                    # BUILT: profile + analysis + fixed text
 │   ├── scan/scanService.js                 # the conductor for photo scans
@@ -305,7 +328,6 @@ shojin-pass/
 │   ├── phrases.ja.json  CHANGELOG.md
 ├── supabase/
 │   ├── migrations/001_init.sql
-│   └── seed.sql
 ├── tests/
 │   ├── unit/                               # BUILT: one test file per lib file
 │   ├── invariants/                         # BUILT: edge cases, properties, generated labels
@@ -339,9 +361,11 @@ Every key and tunable number lives in an environment variable. Real values go in
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No | Public key; limited by row security | From Supabase settings |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | CAPTCHA widget key for anonymous sign-in | From Cloudflare Turnstile |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Yes** | Full-rights key; server only | From Supabase settings |
-| `GOOGLE_VISION_API_KEY` | **Yes** | OCR key, restricted to the Vision API | From Google Cloud |
-| `LLM_API_KEY` | **Yes** | LLM provider key | From provider |
-| `LLM_MODEL` | No | Exact model id of a small, fast model | Copy from provider docs |
+| `SUPABASE_TIMEOUT_MS` | No | Every Supabase call gives up after this; scans still return their verdict | `1500` |
+| `AZURE_VISION_ENDPOINT` | **Yes** | Azure AI Vision resource endpoint (`https://<name>.cognitiveservices.azure.com/`) | From Azure portal |
+| `AZURE_VISION_KEY` | **Yes** | Azure AI Vision key | From Azure portal |
+| `LLM_API_KEY` | **Yes** | Google Gemini API key (optional: without it the template “why” is used) | From Google AI Studio |
+| `LLM_MODEL` | No | Exact id of a small, fast Gemini model | Copy from the Gemini API docs |
 | `LLM_ENABLED` | No | Master switch for the LLM | `true` |
 | `LLM_TIMEOUT_MS` | No | Give up and keep the template | `2000` |
 | `OCR_TIMEOUT_MS` | No | Give up and return `retake` | `4000` |
@@ -350,8 +374,6 @@ Every key and tunable number lives in an environment variable. Real values go in
 | `SCAN_RATE_LIMIT_PER_MIN` | No | Scans per user per minute | `20` |
 | `SCAN_RATE_LIMIT_PER_DAY` | No | Scans per user per day | `300` |
 | `IP_RATE_LIMIT_PER_MIN` | No | Scan requests per IP per minute | `60` |
-| `STORE_SCAN_IMAGES` | No | Keep photos at all (still needs user opt-in) | `false` |
-| `IMAGE_RETENTION_DAYS` | No | Delete kept photos after | `30` |
 | `SCAN_RETENTION_DAYS` | No | Remove user link from scans after | `90` |
 | `CRON_SECRET` | **Yes** | Vercel Cron sends it; maintenance route checks it | Random 32+ characters |
 | `HEALTH_SECRET` | **Yes** | Header needed for `/api/health/deep` | Random 32+ characters |
@@ -359,63 +381,13 @@ Every key and tunable number lives in an environment variable. Real values go in
 
 ### lib/config/env.js
 
-```js
-import 'server-only';
-import { z } from 'zod';
+`lib/config/env.js` is the source of truth (not copied here, so it cannot drift). Its rules:
 
-const unset = (v) => (v === '' ? undefined : v);
-const opt = (schema) => z.preprocess(unset, schema.optional());
-const bool = (d) => z.preprocess(unset, z.enum(['true', 'false']).default(d).transform((v) => v === 'true'));
-const num = (d) => z.preprocess(unset, z.coerce.number().default(d));
-
-const Schema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: opt(z.string().url()),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: opt(z.string().min(20)),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: opt(z.string().min(10)),
-  SUPABASE_SERVICE_ROLE_KEY: opt(z.string().min(20)),
-  GOOGLE_VISION_API_KEY: opt(z.string().min(10)),
-  LLM_API_KEY: opt(z.string().min(10)),
-  LLM_MODEL: opt(z.string().min(3)),
-  LLM_ENABLED: bool('true'),
-  LLM_TIMEOUT_MS: num(2000),
-  OCR_TIMEOUT_MS: num(4000),
-  OCR_MIN_PAGE_CONFIDENCE: num(0.8),
-  OCR_MIN_CHAR_CONFIDENCE: num(0.7),
-  SCAN_RATE_LIMIT_PER_MIN: num(20),
-  SCAN_RATE_LIMIT_PER_DAY: num(300),
-  IP_RATE_LIMIT_PER_MIN: num(60),
-  STORE_SCAN_IMAGES: bool('false'),
-  IMAGE_RETENTION_DAYS: num(30),
-  SCAN_RETENTION_DAYS: num(90),
-  CRON_SECRET: opt(z.string().min(32)),
-  HEALTH_SECRET: opt(z.string().min(32)),
-  RULEBOOK_ALLOW_UNREVIEWED: bool('false'), // development only (8.5)
-});
-
-export const REQUIRED_FOR_DEPLOY = [
-  'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
-  'SUPABASE_SERVICE_ROLE_KEY', 'GOOGLE_VISION_API_KEY', 'LLM_API_KEY', 'LLM_MODEL',
-  'CRON_SECRET', 'HEALTH_SECRET',
-];
-
-const parsed = Schema.safeParse(process.env);
-if (!parsed.success) {
-  const names = [...new Set(parsed.error.issues.map((i) => i.path.join('.')))].join(', ');
-  throw new Error('Missing or invalid environment variables: ' + names);
-}
-export const env = parsed.data;
-
-export function requireEnv(...names) {
-  const missing = names.filter((n) => env[n] === undefined);
-  if (missing.length) throw new Error('Missing or invalid environment variables: ' + missing.join(', '));
-  return env;
-}
-
-if (process.env.VERCEL_ENV === 'production') {
-  requireEnv(...REQUIRED_FOR_DEPLOY);
-  if (env.RULEBOOK_ALLOW_UNREVIEWED) throw new Error('RULEBOOK_ALLOW_UNREVIEWED must not be true in production');
-}
-```
+- Zod schema over `process.env`; empty values count as not set; tunables have the defaults in the table above.
+- Keys and secrets are optional at startup; `requireEnv(...names)` throws listing every missing name.
+- `REQUIRED_FOR_DEPLOY`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`, `CRON_SECRET`, `HEALTH_SECRET` — all required when `VERCEL_ENV=production`, where `RULEBOOK_ALLOW_UNREVIEWED=true` also stops the server.
+- `LLM_API_KEY` and `LLM_MODEL` are deliberately not required: without them (or with `LLM_ENABLED=false`) the explanation endpoint returns the template “why” (11.5). Scans never need the LLM.
+- `isProduction` is exported for code that must behave differently on the production deploy (e.g. `/dev` is hidden).
 
 The server loads the rulebook through `lib/config/rulebook.js` (`serverRulebook()`), which reads `<project>/rulebook` and passes `env.RULEBOOK_ALLOW_UNREVIEWED` to `buildRulebook()`. The engine's own `getRulebook()` is kept for scripts and tests. `next.config.mjs` includes `rulebook/**/*.json` in every API function's file trace.
 
@@ -425,7 +397,7 @@ The server loads the rulebook through `lib/config/rulebook.js` (`serverRulebook(
 2. `.env.local` MUST be in `.gitignore`. If a secret is ever pushed, create a new key immediately; deleting the commit is not enough.
 3. Share keys through a password manager or Vercel’s team settings, never in WhatsApp or Slack.
 
-Set a monthly spending cap (Google Cloud budget alert and LLM provider limit) before the first deploy.
+Set a monthly spending cap (Azure budget alert; Gemini usage limits in Google AI Studio) before the first deploy.
 
 # 8. Rulebook
 
@@ -671,7 +643,7 @@ Then `decideVerdict()` (section 10) combines everything.
 
 ## 9.12 Step 12 — Save, then reply
 
-Unchanged from v2: the scan row is saved before replying; photos only with opt-in; events after the reply.
+The scan row is saved before replying (service role, `SUPABASE_TIMEOUT_MS`); a failed or slow save returns the verdict with `scanId: null` (14.4). No photos are ever stored.
 
 ## 9.13 Result object
 
@@ -869,7 +841,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 ## 13.1 Rules shared by every endpoint
 
 - All paths start with `/api/`. All handlers export `runtime = 'nodejs'`.
-- **Session:** Supabase session in cookies. The app calls `signInAnonymously({ options: { captchaToken } })` on first open, with a Turnstile token. Endpoints marked “Session” return `401 UNAUTHENTICATED` without one.
+- **Session:** Supabase session in cookies. The app calls `signInAnonymously({ options: { captchaToken } })` on first open, with a Turnstile token. Endpoints marked “Session” return `401 UNAUTHENTICATED` without one. Scans are marked “Session optional”: they work without a session and are then not saved (B3).
 - **Success:** `{ "data": { … }, "meta": { "requestId": "…", "rulebookVersion": "1.1.0" } }`.
 - **Error:** `{ "error": { "code": "IMAGE_TOO_LARGE", "message": "Photo must be under 4 MB." }, "meta": { "requestId": "…" } }`.
 - **A verdict is never an error.** `retake` and `amber` return status 200.
@@ -896,8 +868,8 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 |---|---|---|---|---|
 | GET | `/api/health` | Anyone | `{ ok, rulebookVersion }` | Hackathon |
 | GET | `/api/health/deep` | Header `x-health-secret` | Calls OCR on a built-in tiny label and the LLM once; reports each | Hackathon |
-| POST | `/api/scan` | Session | Photo → result | Hackathon |
-| POST | `/api/scan/text` | Session | Typed text → result | Hackathon |
+| POST | `/api/scan` | Session optional | Photo → result | Hackathon |
+| POST | `/api/scan/text` | Session optional | Typed text → result | Hackathon |
 | POST | `/api/scan/{id}/explain` | Session, owner | LLM “why” or template | Hackathon |
 | POST | `/api/scan/{id}/feedback` | Session, owner | Record feedback | Hackathon |
 | GET | `/api/profile` | Session | Saved profile | Hackathon |
@@ -907,6 +879,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 | GET | `/api/routes/{slug}` | Anyone | One route with stops, diet + sunset flags | Hackathon |
 | GET | `/api/venues` | Anyone | Certified venues near a point | Hackathon |
 | POST | `/api/chef-card` | Anyone | Japanese + English card | Hackathon |
+| GET | `/api/insights` | Anyone | Verdict-colour counts, top 10 red ingredients; no user ids (B10) | Hackathon |
 | GET | `/api/cron/maintenance` | Vercel Cron (`CRON_SECRET`) | Retention clean-up | Hackathon |
 | POST | `/api/scan/barcode` | Session | JAN barcode → result | Pilot |
 | GET | `/api/rulebook` | Anyone | Rulebook snapshot for offline mode | Pilot |
@@ -967,9 +940,9 @@ export async function POST(req) {
 
 ## 13.5 POST /api/scan/text
 
-JSON body `{ "text": "原材料名：…", "preset": "vegetarian", "lang": "en" }`; `text` 1–4000 characters. Skips image and OCR steps; confidence is 1.0. Uses the `scan` rate-limit bucket. Uses: building the pipeline before OCR works, the text-mode evaluation, and a stage backup if the camera fails.
+JSON body `{ "text": "原材料名：…", "preset": "vegetarian", "options": [], "lang": "en" }` (`options` read only with `preset`); `text` 1–4000 characters. Skips image and OCR steps; confidence is 1.0. Uses the `scan` rate-limit bucket. Uses: building the pipeline before OCR works, the text-mode evaluation, and a stage backup if the camera fails.
 
-> **Build note:** in build stage 1 this endpoint has no session check yet (a TODO in the route file). The session check is added in stage 2 and the rate limit in stage 6. Nothing is deployed before stage 2.
+> **Session optional (B3):** with a session the scan is saved; without one (or if Supabase fails) the verdict is still returned with `scanId: null`. The diet comes from the request, else the saved profile, else the strictest fallback (14.4). Rate limits arrive in stage 6.
 
 ## 13.6 POST /api/scan/{id}/explain
 
@@ -983,10 +956,10 @@ Body `{ "kind": "wrong_verdict" | "unreadable" | "helpful", "note": "…" }` (no
 
 ```
 // PUT body (all fields optional; unknown fields rejected)
-{ "preset": "jain_strict", "options": ["no_food_after_sunset"], "lang": "gu", "storePhotos": false }
+{ "preset": "jain_strict", "options": ["no_food_after_sunset"], "lang": "gu" }
 ```
 
-PUT returns the saved profile. Unknown preset or option → `400`. DELETE removes stored photos, then deletes the auth user; all user rows are removed by cascade. It returns `{ "deleted": true }` and the app clears its session and signs in anonymously again.
+GET returns `{ preset, options, lang }`. PUT returns the saved profile. Unknown preset or option → `400`. All three need a session (`401` otherwise) and use the user’s own Supabase client, so row security applies. The app saves the diet to localStorage first, so a failed PUT never blocks scanning. DELETE deletes the auth user (no photos are stored); all user rows are removed by cascade. It returns `{ "deleted": true }` and the app clears its session and signs in anonymously again.
 
 ## 13.9 GET /api/routes and /api/routes/{slug}
 
@@ -1003,7 +976,7 @@ Body `{ "preset": "jain_strict", "options": [], "dishNameJa": "野菜の天ぷ�
 ## 13.12 GET /api/health/deep and /api/cron/maintenance
 
 - `/api/health/deep` requires header `x-health-secret: HEALTH_SECRET`. It OCRs a small label image bundled in the repo (expects 原材料), asks the LLM for a fixed short reply, and checks the database. Returns `{ ocr: 'ok'|'fail', llm: 'ok'|'fail', db: 'ok'|'fail', ms: {...} }`. Run it 5 minutes before the pitch.
-- `/api/cron/maintenance` requires `Authorization: Bearer CRON_SECRET` (Vercel Cron sends this automatically). It calls the `apply_retention` database function and deletes stored photos older than `IMAGE_RETENTION_DAYS`. Scheduled daily in `vercel.json`.
+- `/api/cron/maintenance` requires `Authorization: Bearer CRON_SECRET` (Vercel Cron sends this automatically). It calls the `apply_retention` database function. Scheduled daily in `vercel.json`. **Stage 6 (B11):** the daily cron hits the deep health check, which queries Supabase so the free project never pauses, and runs retention.
 
 ```
 // vercel.json
@@ -1016,309 +989,52 @@ Body `{ "preset": "jain_strict", "options": [], "dishNameJa": "野菜の天ぷ�
 
 # 14. Database schema (Supabase Postgres)
 
-One migration file creates everything: `supabase/migrations/001_init.sql`. It is given here in full and can be pasted into the Supabase SQL editor. The server writes with the service-role key (which bypasses row security); row security protects anything a browser could reach with the public key.
+`supabase/migrations/001_init.sql` is the source of truth (not copied here, so it cannot drift). It is run once in the Supabase SQL editor. It is written for a project where **“Automatically expose new tables” is off** and **automatic RLS is on**, so it grants every privilege explicitly and enables row level security explicitly on every table. `tests/db/migration.test.js` runs it in PGlite (real Postgres in memory) and checks every rule below as the browser roles would meet them.
 
-## 14.1 Tables at a glance
+## 14.1 Tables
 
-| Table | One row per | Hackathon? |
+| Table | One row per | Holds |
 |---|---|---|
-| `profiles` | User (created automatically on sign-in) | Yes |
-| `scans` | Scan | Yes |
-| `scan_feedback` | Feedback tap | Yes |
-| `venues`, `menu_items` | Venue, dish | Venues yes (seed); menu items pilot |
-| `routes`, `route_stops` | Route, stop | Yes (seed) |
-| `events` | Funnel event | Yes (server only) |
-| `products` | Human-verified barcode product | Pilot |
-| `unknown_terms` | Normalised unknown term | Pilot |
-| `chef_replies` | Chef button tap | Pilot |
-| `bookings` | Booking request | Pilot (demo logs interest) |
+| `profiles` | User (created by a trigger on every new auth user, anonymous included) | `diet_preset`, `options`, `language`, `role`, timestamps |
+| `scans` | Scan | Source, diet used, verdict, reasons, matched ingredients (`items`), unknown and low-confidence terms, completeness, OCR confidence, rulebook version, latency. **No label text and no photo.** |
+| `scan_feedback` | Feedback tap | Scan, user, kind, note (≤ 500), `priority` (wrong verdict on a green scan) |
 
-## 14.2 Migration, part 1 — profiles and role protection
+Venues, routes and route stops are **JSON files** in the repo (stage 5), not tables. Events, products, unknown terms, chef replies and bookings are pilot tables and are not created yet. `/api/insights` (stage 5) reads verdict counts and red ingredients from `scans` with the service role and returns no user ids.
 
-```sql
--- supabase/migrations/001_init.sql
-create extension if not exists pgcrypto;
+The `profiles` check constraints list exactly the presets in `rulebook/diets.json` and the options in `rulebook/options.json` (including `avoid_root_possible`); a test fails if they drift apart.
 
-create table public.profiles (
-  id           uuid primary key references auth.users(id) on delete cascade,
-  diet_preset  text not null default 'vegetarian'
-               check (diet_preset in ('vegetarian','vegetarian_egg','no_onion_garlic',
-                                      'jain_flexible','jain_strict')),
-  options      text[] not null default '{}'
-               check (options <@ array['avoid_fungus','avoid_alcohol','avoid_root_possible',
-                                       'avoid_shared_line','no_food_after_sunset']::text[]),
-  language     text not null default 'en' check (language in ('en','hi','gu')),
-  store_photos boolean not null default false,
-  role         text not null default 'traveller'
-               check (role in ('traveller','venue','reviewer','admin')),
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
-);
+## 14.2 Who may do what
 
--- New auth user -> profile row
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = '' as $$
-begin
-  insert into public.profiles (id) values (new.id) on conflict (id) do nothing;
-  return new;
-end $$;
+| Role | Who | profiles | scans | scan_feedback |
+|---|---|---|---|---|
+| `anon` | No session | nothing | nothing | nothing |
+| `authenticated` | Signed-in user, anonymous included | read own; insert own (id + diet columns); update own diet columns only (`diet_preset`, `options`, `language`) | read own | read own |
+| `service_role` | The server only | all | all | all |
 
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+- **Users never write scans or feedback.** Otherwise anyone could insert a scan with a forged verdict using the public key. The server writes both with the service role, after the engine has decided.
+- **`role` is protected twice:** no column grant, and a trigger that refuses a role change from `anon` / `authenticated`.
+- **Deletion:** `DELETE /api/profile` deletes the auth user; profiles, scans and feedback go by cascade.
+- **Functions:** `handle_new_user` (security definer, sign-up trigger), `protect_profile_role`, `apply_retention(scan_days)` (unlinks scans and feedback from users after `SCAN_RETENTION_DAYS`; executable by `service_role` only). Execute is revoked from `public`, `anon` and `authenticated` on all three.
+- Policies use `(select auth.uid())` so it is evaluated once per query.
 
--- Role can never be changed from a browser session (fix from the v1 review)
-create or replace function public.protect_profile_role()
-returns trigger language plpgsql as $$
-begin
-  if new.role is distinct from old.role and current_user in ('anon','authenticated') then
-    raise exception 'profiles.role can only be changed by the server';
-  end if;
-  new.updated_at := now();
-  return new;
-end $$;
+## 14.3 How the server talks to Supabase
 
-create trigger profiles_protect_role
-  before update on public.profiles
-  for each row execute function public.protect_profile_role();
+- **As the user** (`lib/db/supabaseServer.js`, public key + session cookie): `getUser()` and every `/api/profile` read and write. Row security and the column grants do the enforcing.
+- **As the server** (`lib/db/supabaseAdmin.js`, service-role key): saving scans (`lib/scan/scanRepo.js`), feedback (stage 4), deleting users, retention, insights. Every call names the user id explicitly.
+- Every Supabase call uses a fetch that gives up after `SUPABASE_TIMEOUT_MS` (1.5 s), and the scan path also races each call against the same limit.
 
--- Belt and braces: browsers may only update these columns
-revoke update on public.profiles from anon, authenticated;
-grant update (diet_preset, options, language, store_photos) on public.profiles to authenticated;
+## 14.4 Scanning never depends on Supabase (from stage 2)
 
--- Role check used by policies (security definer avoids policy recursion)
-create or replace function public.has_role(r text)
-returns boolean language sql stable security definer set search_path = '' as $$
-  select exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = r);
-$$;
-```
+| Failure | What the scan does |
+|---|---|
+| No session, Turnstile failed, sign-in failed | Verdict returned, not saved (`scanId: null`) |
+| Supabase keys missing, Supabase down or slow | Verdict returned, not saved, one error log line (`op: get_user` / `save_scan`) |
+| Saving the scan fails or times out | Verdict returned, `scanId: null`, logged |
+| No diet in the request and no readable saved profile | Strictest diet: `jain_strict` + `avoid_shared_line`, `dietSource: "fallback"` |
 
-## 14.3 Migration, part 2 — scans and feedback
+The app keeps the diet in localStorage (`lib/client/shojinClient.js`, key `shojin.diet.v1`) and sends it with every scan, so a normal scan never needs Supabase to know the diet. Diet source order: the request → the saved profile → the strictest fallback. The result carries `dietSource: "request" | "saved" | "fallback"`.
 
-```sql
-create table public.scans (
-  id                   uuid primary key default gen_random_uuid(),
-  user_id              uuid references public.profiles(id) on delete cascade,
-  source               text not null check (source in ('photo','text','barcode')),
-  image_path           text,
-  ocr_text             text,
-  ocr_confidence       numeric(4,3),
-  diet_preset          text not null,
-  options              text[] not null default '{}',
-  language             text not null default 'en',
-  verdict              text not null check (verdict in ('green','amber','red','retake')),
-  reasons              text[] not null default '{}',
-  items                jsonb not null default '[]'::jsonb,
-  unknown_terms        text[] not null default '{}',
-  low_confidence_terms text[] not null default '{}',
-  completeness         text check (completeness in ('complete','incomplete')),
-  rulebook_version     text not null,
-  explanation          text,
-  explanation_source   text check (explanation_source in ('llm','template')),
-  latency_ms           integer,
-  product_jan          text,
-  created_at           timestamptz not null default now()
-);
-
-create table public.scan_feedback (
-  id         uuid primary key default gen_random_uuid(),
-  scan_id    uuid not null references public.scans(id) on delete cascade,
-  user_id    uuid references public.profiles(id) on delete cascade,
-  kind       text not null check (kind in ('wrong_verdict','unreadable','helpful')),
-  note       text check (char_length(note) <= 500),
-  priority   boolean not null default false,
-  created_at timestamptz not null default now()
-);
-```
-
-## 14.4 Migration, part 3 — venues, routes, bookings, chef replies
-
-```sql
-create table public.venues (
-  id                   uuid primary key default gen_random_uuid(),
-  name_en              text not null,
-  name_ja              text not null,
-  type                 text not null check (type in ('temple','restaurant','ryokan','cafe')),
-  city                 text not null,
-  address              text,
-  lat                  double precision not null,
-  lng                  double precision not null,
-  certification        text not null default 'none'
-                       check (certification in ('none','pending','certified','suspended')),
-  certified_at         timestamptz,
-  checklist            jsonb not null default '[]'::jsonb,
-  supports             text[] not null default '{}',
-  serves_before_sunset boolean not null default false,
-  created_at           timestamptz not null default now()
-);
-
-create table public.menu_items (
-  id               uuid primary key default gen_random_uuid(),
-  venue_id         uuid not null references public.venues(id) on delete cascade,
-  name_en          text not null,
-  name_ja          text not null,
-  ingredients_text text not null,
-  reviewed_at      timestamptz,
-  created_at       timestamptz not null default now()
-);
-
-create table public.routes (
-  id             uuid primary key default gen_random_uuid(),
-  slug           text not null unique,
-  title          text not null,
-  city           text not null,
-  lat            double precision not null,       -- NEW: for sunset
-  lng            double precision not null,       -- NEW: for sunset
-  duration_label text,
-  price_jpy      integer,
-  description    text,
-  diet_presets   text[] not null default '{}',
-  seasons        text[] not null default '{}',
-  published      boolean not null default false,
-  created_at     timestamptz not null default now()
-);
-
-create table public.route_stops (
-  id         uuid primary key default gen_random_uuid(),
-  route_id   uuid not null references public.routes(id) on delete cascade,
-  position   integer not null,
-  start_time time not null,                       -- Japan local time
-  title      text not null,
-  venue_id   uuid references public.venues(id),
-  note       text,
-  is_meal    boolean not null default false,
-  created_at timestamptz not null default now(),
-  unique (route_id, position)
-);
-
-create table public.bookings (
-  id             uuid primary key default gen_random_uuid(),
-  route_id       uuid not null references public.routes(id),
-  user_id        uuid not null references public.profiles(id) on delete cascade,
-  travel_date    date not null,
-  party_size     integer not null check (party_size between 1 and 20),
-  status         text not null default 'requested'
-                 check (status in ('requested','confirmed','cancelled')),
-  commission_pct numeric(4,1),
-  created_at     timestamptz not null default now()
-);
-
-create table public.chef_replies (
-  id           uuid primary key default gen_random_uuid(),
-  venue_id     uuid references public.venues(id) on delete cascade,
-  menu_item_id uuid references public.menu_items(id) on delete cascade,
-  dish_name_ja text,
-  diet_preset  text not null,
-  reply        text not null check (reply in ('contains','can_make_without','fine')),
-  consent      boolean not null check (consent),
-  user_id      uuid references public.profiles(id) on delete cascade,
-  expires_at   timestamptz not null default now() + interval '120 days',
-  created_at   timestamptz not null default now()
-);
-```
-
-## 14.5 Migration, part 4 — events, products, unknown terms
-
-```sql
-create table public.events (
-  id         bigserial primary key,
-  user_id    uuid references public.profiles(id) on delete set null,
-  name       text not null check (name in ('profile_created','scan_done','explain_shown',
-                     'chef_card_shown','route_viewed','route_booked','feedback_sent')),
-  props      jsonb not null default '{}'::jsonb,       -- never personal details
-  created_at timestamptz not null default now()
-);
-
-create table public.products (
-  jan_code         text primary key,
-  name             text not null,
-  ingredients_text text not null,                   -- text, not a verdict
-  verified_by      uuid references public.profiles(id),
-  verified_at      timestamptz,
-  created_at       timestamptz not null default now()
-);
-
-create table public.unknown_terms (
-  term            text primary key,                 -- normalised text
-  times_seen      integer not null default 1,
-  example_scan_id uuid references public.scans(id) on delete set null,
-  status          text not null default 'new' check (status in ('new','added','ignored')),
-  created_at      timestamptz not null default now()
-);
-```
-
-## 14.6 Migration, part 5 — row security, indexes, retention
-
-```sql
-alter table public.profiles      enable row level security;
-alter table public.scans         enable row level security;
-alter table public.scan_feedback enable row level security;
-alter table public.venues        enable row level security;
-alter table public.menu_items    enable row level security;
-alter table public.routes        enable row level security;
-alter table public.route_stops   enable row level security;
-alter table public.bookings      enable row level security;
-alter table public.chef_replies  enable row level security;
-alter table public.events        enable row level security;
-alter table public.products      enable row level security;
-alter table public.unknown_terms enable row level security;
-
-create policy profiles_own_select on public.profiles for select to authenticated
-  using (id = auth.uid() or public.has_role('admin'));
-create policy profiles_own_update on public.profiles for update to authenticated
-  using (id = auth.uid()) with check (id = auth.uid());
-
-create policy scans_select on public.scans for select to authenticated
-  using (user_id = auth.uid() or public.has_role('reviewer') or public.has_role('admin'));
-create policy feedback_select on public.scan_feedback for select to authenticated
-  using (user_id = auth.uid() or public.has_role('reviewer') or public.has_role('admin'));
-
-create policy venues_public on public.venues for select to anon, authenticated
-  using (certification = 'certified');
-create policy menu_public on public.menu_items for select to anon, authenticated
-  using (exists (select 1 from public.venues v
-                 where v.id = venue_id and v.certification = 'certified'));
-create policy routes_public on public.routes for select to anon, authenticated
-  using (published);
-create policy stops_public on public.route_stops for select to anon, authenticated
-  using (exists (select 1 from public.routes r where r.id = route_id and r.published));
-
-create policy bookings_own on public.bookings for select to authenticated
-  using (user_id = auth.uid() or public.has_role('admin'));
-create policy chef_own on public.chef_replies for select to authenticated
-  using (user_id = auth.uid() or public.has_role('admin'));
-create policy events_admin on public.events for select to authenticated
-  using (public.has_role('admin'));
-create policy products_public on public.products for select to anon, authenticated
-  using (true);
-create policy unknown_reviewers on public.unknown_terms for select to authenticated
-  using (public.has_role('reviewer') or public.has_role('admin'));
--- No insert/update/delete policies: all writes go through the server (service role).
-
-create index scans_user_time   on public.scans (user_id, created_at desc);
-create index scans_time        on public.scans (created_at);
-create index feedback_priority on public.scan_feedback (priority, created_at desc);
-create index stops_route_pos   on public.route_stops (route_id, position);
-create index chef_venue_exp    on public.chef_replies (venue_id, expires_at);
-create index unknown_seen      on public.unknown_terms (times_seen desc);
-create index venues_city_cert  on public.venues (city, certification);
-
--- Retention (called daily by /api/cron/maintenance)
-create or replace function public.apply_retention(scan_days integer)
-returns void language plpgsql security definer set search_path = '' as $$
-begin
-  update public.scans set user_id = null
-   where user_id is not null and created_at < now() - make_interval(days => scan_days);
-  update public.scan_feedback set user_id = null
-   where user_id is not null and created_at < now() - make_interval(days => scan_days);
-  delete from public.chef_replies where expires_at < now();
-end $$;
-revoke execute on function public.apply_retention(integer) from public, anon, authenticated;
-```
-
-> **Note:** Storage: create the private bucket `labels` in the dashboard and add NO storage policies. Only the server (service role) can read or write it.
-
-## 14.7 Rulebook tables (pilot)
+## 14.5 Rulebook tables (pilot)
 
 | Table | Holds |
 |---|---|
@@ -1330,19 +1046,9 @@ revoke execute on function public.apply_retention(integer) from public, anon, au
 
 Scans never read these tables. Publishing writes a snapshot; each server instance loads the newest snapshot on start and checks for a newer version every 5 minutes.
 
-## 14.8 Seed data (supabase/seed.sql)
+## 14.6 Seed data
 
-One Kyoto route and about five venues the team has actually checked. Use real names only for venues the team has verified; use clearly fake names (“Demo Shojin Kitchen”) otherwise. Every route MUST have `lat`/`lng`, and every meal stop MUST have `is_meal = true`.
-
-```sql
-insert into public.routes (slug, title, city, lat, lng, duration_label, price_jpy,
-                           description, diet_presets, seasons, published)
-values ('kyoto-temple-day', 'Kyoto temple day', 'Kyoto', 35.0116, 135.7681, 'Full day', 18000,
-        'Temples, shojin lunch and an early dinner.',
-        array['vegetarian','vegetarian_egg','no_onion_garlic','jain_flexible','jain_strict'],
-        array['autumn','diwali'], true);
--- route_stops: insert with (route_id, position, start_time, title, venue_id, is_meal)
-```
+Venues and routes are JSON files in the repo (stage 5), not database rows. Use real names only for venues the team has verified; use clearly fake names (“Demo Shojin Kitchen”) otherwise. Every route MUST have `lat`/`lng`, and every meal stop MUST have `isMeal: true`.
 
 # 15. Chef card, Shojin Routes and venues
 
@@ -1406,7 +1112,7 @@ Stored in `venues.checklist` as `[{ id, answer: true|false, verifiedBy, verified
 | Threat | Protection |
 |---|---|
 | Secret key leaks to the browser | Secrets read only in `lib/` files that import `server-only`; never `NEXT_PUBLIC_`. |
-| User reads someone else’s data | Row security on every table (14.6); owner checks in explain/feedback return 404. |
+| User reads someone else’s data | Row security on every table (14.2); owner checks in explain/feedback return 404. |
 | User makes themselves admin | `role` column not updatable by browsers (column grant) + trigger (14.2); admin routes check `role` on the server. |
 | Bot creates endless anonymous users | Turnstile CAPTCHA on anonymous sign-in (Supabase Auth → Bot protection). |
 | Abuse runs up OCR/LLM bills | Per-user minute and day limits + per-IP limit in code; Vercel Firewall rate-limit rule on `/api/scan*` (e.g. 100 requests/minute per IP); spending caps on both accounts. |
@@ -1421,7 +1127,7 @@ Stored in `venues.checklist` as `[{ id, answer: true|false, verifiedBy, verified
 A diet profile like “Jain (strict)” reveals religion. India’s Digital Personal Data Protection Act 2023 applies to all personal data without a separate “sensitive” category, so consent, purpose limits and deletion rights apply to everything we hold. Japan’s APPI treats creed (religion) as special-care-required personal information. The design therefore stores as little as possible:
 
 - **Anonymous by default.** No name, email or phone needed.
-- **Photos not kept** unless `STORE_SCAN_IMAGES` is on AND the user opted in; deleted after 30 days; metadata removed before any storage.
+- **Photos never kept.** They are re-encoded in memory, sent to OCR and dropped. Scans store matched ingredients, not label text.
 - **Scan history unlinked** from the user after 90 days (`apply_retention`).
 - **Clear consent** before a chef reply is saved; a short privacy notice on the profile screen says what is stored, why, and for how long.
 - **Partners see totals only**, such as scans per product category; never a person’s profile or history.
@@ -1510,8 +1216,8 @@ One file per module: normalize (15 tests incl. look-alikes, emoji alignment, voi
 ## 19.1 One-time setup (do before 24 October)
 
 1. **GitHub:** repository `shojin-pass`, all teammates added, `main` protected (pull requests + passing CI).
-2. **Supabase:** project in Tokyo (`ap-northeast-1`). Run `001_init.sql`, then `seed.sql`. Create private bucket `labels`. Turn on anonymous sign-ins. Turn on Bot protection with Cloudflare Turnstile (secret key goes in Supabase; site key goes in `NEXT_PUBLIC_TURNSTILE_SITE_KEY`).
-3. **Google Cloud:** project, enable Cloud Vision API, API key restricted to that API, budget alert.
+2. **Supabase:** project in Tokyo (`ap-northeast-1`). Run `001_init.sql` (no storage bucket, no seed: venues and routes are JSON). Turn on anonymous sign-ins. Turn on Bot protection with Cloudflare Turnstile (secret key goes in Supabase; site key goes in `NEXT_PUBLIC_TURNSTILE_SITE_KEY`).
+3. **Azure:** Azure AI Vision resource (Computer Vision), endpoint and key, budget alert. **Google AI Studio:** Gemini API key.
 4. **LLM provider:** API key and monthly spending limit; copy the exact model id into `LLM_MODEL`.
 5. **Vercel:** import the repo, add every variable from section 7, commit `vercel.json` (region `hnd1`, cron). Add a Firewall rate-limit rule for `/api/scan`.
 6. **Check:** `/api/health` returns ok and the rulebook version; `/api/health/deep` returns ok for OCR, LLM and DB.
@@ -1543,7 +1249,7 @@ Build the pipeline on typed text first, then add OCR, then the LLM. A working de
 
 - All accounts, keys, Turnstile and Firewall rule from 19.1; keys shared safely.
 - Empty Next.js project deployed; `/api/health` working; CI running.
-- `001_init.sql` and `seed.sql` applied.
+- `001_init.sql` applied.
 - Rulebook: at least 100 of 150 terms, two reviewers each, and every row of the ambiguous-words table (8.4) decided.
 - 30 label photos taken (with the vertical, cut-off and tricky-ingredient mix from 18.4) and `expected.json` filled in by hand.
 - Chef-card phrases and the Hindi/Gujarati verdict lines checked by native speakers.
@@ -1568,7 +1274,7 @@ Barcode lookup, chef-reply saving, bookings, the admin portal, offline mode, a s
 
 | Upgrade | What changes | Why |
 |---|---|---|
-| Rulebook in the database | Tables in 14.7, reviewer screen, two-person publish, snapshots | Grows to 500 terms with community reviewers |
+| Rulebook in the database | Tables in 14.5, reviewer screen, two-person publish, snapshots | Grows to 500 terms with community reviewers |
 | Review queue | Unknown terms from real scans counted and ranked | Rulebook learns from real labels |
 | Shared rate limit | Upstash Redis (or similar) instead of in-memory | Limits hold across all server instances |
 | Barcode products | `/api/scan/barcode` + `products` | Instant, human-checked answers for popular items |
@@ -1576,7 +1282,7 @@ Barcode lookup, chef-reply saving, bookings, the admin portal, offline mode, a s
 | “由来” upgrades | 乳化剤（大豆由来）recognised as plant source | Fewer needless ambers |
 | Offline mode | Rulebook on the phone; on-device Japanese OCR | Works in basements and at Koyasan |
 | Venue platform | Admin portal, certification workflow, chef-reply loop, PostGIS | Scales beyond Kyoto |
-| OCR service account | Google service account instead of an API key | Stronger key handling |
+| OCR managed identity | Azure managed identity / Entra ID instead of an API key | Stronger key handling |
 
 If the pipeline ever needs more power than Vercel functions give, `lib/` can move into its own server unchanged. That is why it is kept separate from `app/api/`.
 

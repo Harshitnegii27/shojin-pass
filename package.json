@@ -16,9 +16,12 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
     "vitest": "^2.1.9"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
     "next": "^16.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
