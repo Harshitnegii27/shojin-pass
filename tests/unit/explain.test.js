@@ -153,7 +153,7 @@ describe('explain: anything doubtful falls back to the template', () => {
     ['empty', '', 'rejected_empty'],
     ['too long', 'Lard is pork fat. '.repeat(60), 'rejected_too_long'],
     ['wrong language (Hindi asked for English)', 'लार्ड सूअर की चर्बी है। स्टाफ़ से पूछें।', 'rejected_wrong_language'],
-    ['Japanese other than the red words given', 'Lard (ラード) is pork fat. Pork (ポーク) may also be inside. Look for other packs.', 'rejected_wrong_language'],
+    ['Japanese other than the red words given', 'Lard (ラード) is pork fat. Pork (ポーク) may also be inside. Look for other packs.', 'rejected_unexpected_japanese'],
     ['off topic', 'Japan has many interesting foods. Ask the staff with the chef card.', 'rejected_off_topic'],
     ['a link', 'Lard is pork fat. See https://example.org for more.', 'rejected_number_or_link'],
   ])('%s -> template', async (_, why, reason) => {
@@ -320,12 +320,37 @@ describe('explain: definitely avoided vs unclear source', () => {
     ['states an unclear item as definite', `${red} (えび) and ${alc} (酒精) are avoided. Flavouring definitely comes from animals, and enzyme may too. Look for other packs.`, 'unclear_stated_as_definite'],
     ['lumps unclear items in with the red ones, no hedge', `${red} (えび), ${alc} (酒精), flavouring, enzyme and seasoning are all avoided in a strict Jain diet. Look for other packs.`, 'unclear_not_hedged'],
     ['suggests the chef card for a packaged product', `${red} (えび) and ${alc} (酒精) are avoided. Flavouring may be animal-based. Show the chef card to the staff.`, 'chef_card_for_product'],
-    ['writes a Japanese word it was not given', `${red} (えび) and ${alc} (アルコール) are avoided. Flavouring may be animal-based. Look for other packs.`, 'wrong_language'],
+    ['writes a Japanese word it was not given', `${red} (えび) and ${alc} (アルコール) are avoided. Flavouring may be animal-based. Look for other packs.`, 'unexpected_japanese'],
+    ['gives an unclear item a Japanese word', `${red} (えび) and ${alc} (酒精) are avoided. Flavouring (香料) may be animal-based. Look for other packs.`, 'unexpected_japanese'],
   ])('a mocked answer that %s -> template', async (_, why, reason) => {
     quiet();
     const scan = MIXED();
     const r = await run(scan, fakeGemini(geminiReply(why)));
     expect(r).toMatchObject({ source: 'template', fallbackReason: 'rejected_' + reason, why: templateWhyForRow(scan, rb, 'en') });
+  });
+
+  // Realistic answers as Gemini writes them: Japanese list dots, katakana for a hiragana word,
+  // full-width brackets, and English food words inside Hindi and Gujarati.
+  it.each([
+    ['en', `${red} (えび・かに) and ${alc}（酒精）are avoided in a strict Jain diet. Flavouring, enzyme and seasoning may come from animals, because their source is not stated. On other packs, look for ingredient lists without エビ, カニ or 酒精.`],
+    ['hi', 'इस पैक में झींगा या केकड़ा (えび・かに) और शराब (酒精) है, जो सख़्त जैन आहार में नहीं लिए जाते। Flavouring, enzyme और seasoning पशु से बने हो सकते हैं, क्योंकि उनका स्रोत नहीं लिखा है। दूसरे पैक की सामग्री सूची में えび, かに या 酒精 न हों, यह देखें।'],
+    ['gu', 'આ પેકમાં ઝીંગા અથવા કરચલો (エビ・カニ) અને દારૂ（酒精）છે, જે કડક જૈન આહારમાં લેવાતા નથી. Flavouring, enzyme અને seasoning પ્રાણીમાંથી બનેલા હોઈ શકે, કારણ કે તેનો સ્ત્રોત લખેલો નથી. બીજા પેકની ઘટક યાદીમાં えび, かに કે 酒精 ન હોય તે જુઓ.'],
+  ])('a realistic %s answer with えび and 酒精 is accepted', async (lang, why) => {
+    const r = await run(MIXED(), fakeGemini(geminiReply(why)), store(), { lang });
+    expect(r).toEqual({ why, source: 'llm', cached: false });
+  });
+
+  it('the script check still bites once the allowed Japanese is ignored', () => {
+    const c = (lang) => ({ lang, flaggedMeaningsEn: [red, alc], unclearMeaningsEn: [], allowedJapanese: ['えび', 'かに', '酒精'] });
+    const accept = (lang, why) => checkExplanation(JSON.stringify({ why }), c(lang));
+    // Hindi asked, but mostly English with a little Hindi: rejected.
+    expect(accept('hi', `${red} (えび) and ${alc} (酒精) are avoided in a strict Jain diet, so look for other packs. यह देखें।`).reason).toBe('wrong_language');
+    // English asked, but mostly Hindi: rejected.
+    expect(accept('en', 'झींगा (えび) और शराब (酒精) सख़्त जैन आहार में नहीं लिए जाते। shrimp').reason).toBe('wrong_language');
+    // Only Japanese and punctuation: no letters left, rejected.
+    expect(accept('en', 'えび・かに（酒精）。').reason).toBe('wrong_language');
+    // Numbers and punctuation do not count against the language.
+    expect(accept('en', `${red} (えび・かに) and ${alc} (酒精) are avoided — check 2 or 3 other packs!`).ok).toBe(true);
   });
 
   it('Hindi and Gujarati answers about unclear items must hedge too', () => {

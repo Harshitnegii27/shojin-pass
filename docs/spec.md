@@ -837,9 +837,10 @@ The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) 
 - Longer than 700 characters, or more than 6 sentences.
 - It contains a banned phrase in any of the three languages — for **every** verdict. English phrases match whole words (so “look for” is fine), except **safe**, which matches anywhere (“unsafe” is rejected too).
 - A digit followed by %, or a link.
-- Wrong language: English must contain no Devanagari or Gujarati; Hindi must be ≥ 60 % Devanagari letters and no Gujarati; Gujarati ≥ 60 % Gujarati letters and no Devanagari. Any Japanese character rejects the reply (it could only come from label text).
+- Japanese first: every Japanese word (hiragana, katakana, kanji, ー, 々) that is one of the red items' given words, in any spelling the engine's `normalizeAlias()` treats as the same (エビ = えび, half-width = full-width), is ignored. Japanese punctuation (・、。「」（）) separates words and is not a letter. Any other Japanese word → `unexpected_japanese` (it would make an unclear item look as if it were printed on the label).
+- Wrong language: numbers, punctuation, symbols and spaces are ignored; of the remaining letters (vowel signs count with their script), at least 80 % must be Latin for `en`, 60 % Devanagari for `hi`, 60 % Gujarati for `gu`. A few English food words in Hindi or Gujarati are fine.
 - English, with flagged items: no key word (4+ letters) of any flagged meaning appears.
-- Japanese: only the red items' Japanese words, exactly as given, are allowed (they are removed before the script check); any other Japanese rejects the reply.
+- Outside production, a rejected answer is logged with its text (`op: "llm_rejected"`, `answer`) to tune the prompt and guard; production logs never hold it.
 - Unclear items present but no hedge word (en: may, might, could, possibly, unclear, not stated …; hi: सकता/सकती/सकते, शायद, स्पष्ट नहीं …; gu: શકે, કદાચ, સ્પષ્ટ નથી …) → `unclear_not_hedged`.
 - English: a sentence that names an unclear item and says definitely / certainly / surely / clearly → `unclear_stated_as_definite`.
 - Packaged product (every label scan) and the reply mentions the chef card, a restaurant or kitchen staff (en/hi/gu) → `chef_card_for_product`.
