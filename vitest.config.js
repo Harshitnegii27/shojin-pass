@@ -13,5 +13,6 @@ export default defineConfig({
   },
   test: {
     exclude: [...configDefaults.exclude, '.next/**'],
+    setupFiles: ['tests/setup/noNetwork.js'],
   },
 });

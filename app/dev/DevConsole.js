@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Script from 'next/script';
 import { createBrowserClient } from '@supabase/ssr';
 import { createShojinClient } from '@/lib/client/shojinClient';
+import { shrinkPhoto } from '@/lib/client/shrinkPhoto';
 
 const box = { border: '1px solid #ccc', borderRadius: 8, padding: 12, margin: '12px 0' };
 
@@ -19,6 +20,7 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
   const [diet, setDiet] = useState({ preset: 'vegetarian', options: [], lang: 'en' });
   const [text, setText] = useState('原材料名：小麦粉、砂糖、ラード\n内容量：100g');
   const [out, setOut] = useState(null);
+  const [photo, setPhoto] = useState(null); // { url, note, busy, summary }
 
   useEffect(() => {
     client.syncDiet().then((r) => r.diet && setDiet(r.diet));
@@ -31,6 +33,28 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
   };
 
   const show = (label, value) => setOut({ label, value });
+
+  const scanFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (photo?.url) URL.revokeObjectURL(photo.url);
+    const { blob, filename, shrunk } = await shrinkPhoto(file);
+    const note = `${file.type || 'unknown type'}, ${(file.size / 1024).toFixed(0)} KB` +
+      (shrunk ? ` → shrunk to ${(blob.size / 1024).toFixed(0)} KB JPEG` : ' → sent as is (browser could not shrink it)');
+    setPhoto({ url: URL.createObjectURL(blob), note, busy: true });
+    const r = await client.scanPhoto(blob, filename);
+    const d = r.data;
+    const summary = d
+      ? [`verdict: ${d.verdict}  (${d.reasons.join(', ') || 'no reasons'})`, `${d.verdictLine} — ${d.why}`,
+        `OCR: ${d.ocr?.status}${d.ocr?.detail ? ' / ' + d.ocr.detail : ''}, page confidence ${d.ocr?.pageConfidence?.toFixed?.(2) ?? '-'}, ${d.ocr?.ms ?? '-'} ms; total ${d.latencyMs} ms`,
+        d.retryAfterSec ? `retry after ${d.retryAfterSec} s` : null,
+        `diet: ${d.profile.preset} ${d.profile.options.join(' ')} (${d.dietSource}); scanId: ${d.scanId ?? 'not saved'}`,
+        d.ocr?.text != null ? `\nOCR text (dev only, never stored):\n${d.ocr.text}` : null].filter(Boolean).join('\n')
+      : `HTTP ${r.status}: ${r.error?.code} — ${r.error?.message}${r.error?.detail ? ' (' + r.error.detail + ')' : ''}`;
+    setPhoto((p) => ({ ...p, busy: false, summary }));
+    show('scanPhoto', r);
+  };
   const toggle = (o) => setDiet((d) => ({ ...d, options: d.options.includes(o) ? d.options.filter((x) => x !== o) : [...d.options, o] }));
 
   return (
@@ -74,6 +98,26 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
         <h2 style={{ fontSize: 17 }}>3. Text scan</h2>
         <textarea rows={4} style={{ width: '100%' }} value={text} onChange={(e) => setText(e.target.value)} />
         <button onClick={async () => show('scanText', await client.scanText(text))}>Scan</button>
+      </section>
+
+      <section style={box}>
+        <h2 style={{ fontSize: 17 }}>3b. Photo scan</h2>
+        <label style={{ marginRight: 12 }}>
+          <span style={{ border: '1px solid #888', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Take photo</span>
+          <input type="file" accept="image/*" capture="environment" onChange={scanFile} style={{ display: 'none' }} />
+        </label>
+        <label>
+          <span style={{ border: '1px solid #888', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Choose photo</span>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" onChange={scanFile} style={{ display: 'none' }} />
+        </label>
+        {photo && (
+          <div style={{ marginTop: 12 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo.url} alt="Photo being scanned" style={{ maxWidth: '100%', maxHeight: 240, display: 'block' }} />
+            <p style={{ fontSize: 12, color: '#555' }}>{photo.note}</p>
+            <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{photo.busy ? 'Reading the label…' : photo.summary}</pre>
+          </div>
+        )}
       </section>
 
       <section style={box}>

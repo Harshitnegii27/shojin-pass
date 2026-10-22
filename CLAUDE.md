@@ -32,9 +32,12 @@ Commit at the end of a stage only if every test passes. The test count may grow;
 2. Done (migration applied to the real project; sign-in, saving the diet and a saved scan tested on
    the laptop, 22 October 2026). Supabase: `supabase/migrations/001_init.sql` (profiles, scans,
    scan_feedback), anonymous login with Turnstile, `/api/profile` GET/PUT/DELETE (spec 13.8, 14).
-3. Photo scans: `prepareImage`, **Azure AI Vision Read** (Image Analysis 4.0, feature `read`, language `ja`)
-   in `readLabel`, `/api/scan`, saving scans (spec 9.1–9.4, 9.12, 13.4). Azure gives confidence per word:
-   every character gets its word's confidence. Keys: `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`.
+3. Built, waiting for my test with real photos. Photo scans: `prepareImage`, Azure AI Vision in
+   `readLabel`, `/api/scan`, saving scans (spec 9.1–9.4, 9.12, 13.4). **Uses Read 3.2** (language `ja`):
+   Image Analysis 4.0 is not available in Central India, my resource's region (Free F0: 20 calls/minute,
+   5,000/month; every poll counts). Every character gets its word's confidence.
+   Keys: `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`. Automated tests never call Azure
+   (`tests/setup/noNetwork.js` blocks the network).
 4. `/api/scan/{id}/explain` with the LLM as in spec 11, using the **Google Gemini API** (free key from
    Google AI Studio; `LLM_API_KEY`, `LLM_MODEL`), plus `/api/scan/{id}/feedback` (spec 11, 13.6, 13.7).
    The LLM only writes the "why" sentence; it never decides or changes a verdict. If it is disabled,

@@ -74,7 +74,7 @@ Decided while building the backend in stages (see `CLAUDE.md`). Where this table
 | B4 | **Diet kept in localStorage** and sent with every scan; no diet and no saved profile → strictest diet (`jain_strict` + `avoid_shared_line`), `dietSource` in the result | A lost diet must never produce a false safe | 13.5, 14.4 | 2 |
 | B5 | **Explicit grants and RLS**; users read/change only their own rows; scans and feedback written only by the server | Project has “Automatically expose new tables” off; users must not forge verdicts | 14 | 2 |
 | B6 | **No photos stored**: no bucket, no `store_photos`, `STORE_SCAN_IMAGES` and `IMAGE_RETENTION_DAYS` removed; scans keep matched ingredients, not label text | Less personal data | 14, 16.2 | 2 |
-| B7 | **OCR is Azure AI Vision Read** (Image Analysis 4.0, feature `read`, language `ja`); each character gets its word's confidence; keys `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY` | Replaces Google Cloud Vision | 3.2, 9.3 | 3 |
+| B7 | **OCR is Azure AI Vision Read 3.2** (language `ja`): Image Analysis 4.0 was planned but is not offered in Central India, the resource's region. Each character gets its word's confidence; keys `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY` | Replaces Google Cloud Vision | 3.2, 9.3 | 3 |
 | B8 | **LLM is the Google Gemini API** (key from Google AI Studio). `/api/scan/{id}/explain` as in section 11; no key, disabled, slow or failing → template “why” | Free tier; the explanation never decides or changes a verdict | 3.2, 11 | 4 |
 | B9 | **Venues and routes from JSON files**, not tables | Small, hand-checked data; fewer moving parts | 14.6, 15 | 5 |
 | B10 | **`GET /api/insights`**: verdict-colour counts and the top 10 red ingredients, no user ids | Partner KPIs without personal data | 13.3 | 5 |
@@ -169,7 +169,7 @@ The backend is one Next.js project written in JavaScript and deployed on Vercel 
 | Framework | Next.js, App Router, Route Handlers (`runtime = 'nodejs'`) | Screens and API in one project, one deploy |
 | Database | Supabase Postgres, region Tokyo (`ap-northeast-1`) | Relational data, row security, hosted |
 | Login | Supabase Auth, anonymous sign-in, CAPTCHA (Cloudflare Turnstile) | No account needed; bots blocked |
-| Image handling | `sharp` (re-encode, rotate, strip metadata), `file-type` (real file type) | Safe, small, correctly rotated images for OCR |
+| Image handling | `sharp` (re-encode, rotate, strip metadata), `file-type` (real file type), `heic-decode` (iPhone HEIC) | Safe, small, correctly rotated images for OCR |
 | OCR | Azure AI Vision Read (Image Analysis 4.0 REST, feature `read`, language `ja`) | Word confidence (applied to each character of the word) and positions |
 | LLM | Google Gemini API, small fast model (`LLM_MODEL`), key from Google AI Studio | Writes the “why” sentence only; optional |
 | Validation | `zod` | Rejects bad input before any work |
@@ -306,7 +306,10 @@ shojin-pass/
 │   ├── rulebook/matcher.js                 # BUILT: matching, boundary rule, second reading
 │   ├── rulebook/verdict.js                 # BUILT: THE verdict engine
 │   ├── ocr/index.js                        # readLabel(): provider-neutral
-│   ├── ocr/azureRead.js                    # Azure Read REST call; word confidence -> each character
+│   ├── ocr/azureRead.js                    # Azure Read 3.2 REST call (upload + poll)
+│   ├── ocr/layout.js                       # line order (vertical Japanese), per-character confidence
+│   ├── text/ocrNotices.js                  # fixed "busy" text (en/hi/gu) the templates do not cover
+│   ├── client/shrinkPhoto.js               # browser: 1600 px JPEG before upload
 │   ├── scan/analyze.js                     # BUILT: the whole pure pipeline for one label
 │   ├── scan/scanText.js                    # BUILT: profile + analysis + fixed text
 │   ├── scan/scanService.js                 # the conductor for photo scans
@@ -368,7 +371,7 @@ Every key and tunable number lives in an environment variable. Real values go in
 | `LLM_MODEL` | No | Exact id of a small, fast Gemini model | Copy from the Gemini API docs |
 | `LLM_ENABLED` | No | Master switch for the LLM | `true` |
 | `LLM_TIMEOUT_MS` | No | Give up and keep the template | `2000` |
-| `OCR_TIMEOUT_MS` | No | Give up and return `retake` | `4000` |
+| `OCR_TIMEOUT_MS` | No | Total time for the Read upload and all polls; then `retake` | `4000` |
 | `OCR_MIN_PAGE_CONFIDENCE` | No | Below this average → `retake` | `0.80` (tune on tuning set only) |
 | `OCR_MIN_CHAR_CONFIDENCE` | No | Any ingredient containing a character below this → amber | `0.70` (tune on tuning set only) |
 | `SCAN_RATE_LIMIT_PER_MIN` | No | Scans per user per minute | `20` |
@@ -565,19 +568,50 @@ Steps 1–4 are the photo path (route handler, image check, OCR, page gate). Ste
 
 ## 9.1 Step 1 — Prepare the photo (on the phone)
 
-Unchanged from v2: longest side 1600 px, JPEG 0.8, user guidance including **include the whole ingredient list**.
+Longest side 1600 px, JPEG 0.8 (`lib/client/shrinkPhoto.js`), user guidance including **include the whole ingredient list**. Redrawing applies the EXIF rotation and drops metadata before upload. If the browser cannot decode the file (HEIC in Chrome), the original is sent.
 
 ## 9.2 Step 2 — Receive and check
 
-Unchanged from v2: session, rate limits, size, Zod, `prepareImage()` (real file type, minimum 600 px, rotation, metadata removed), `resolveProfile()`.
+Session optional (B3), Zod on the form fields, then `resolveProfile()` **before** any OCR call (an unknown preset never uses OCR quota), then `prepareImage()` (`lib/image/prepareImage.js`), entirely in memory:
+
+| Check | Rule | Failure |
+|---|---|---|
+| Size | ≤ 4 MB (also checked from `Content-Length` before reading the form) | 413 `IMAGE_TOO_LARGE` |
+| Real type | From the bytes (`file-type`), never the name or header: JPEG, PNG, WebP, HEIC/HEIF only | 415 `UNSUPPORTED_IMAGE` |
+| Decode | `sharp` (pixel limit 50 MP); HEIC via `heic-decode` (WebAssembly, because sharp's prebuilt binaries have no HEVC decoder) | 415 (corrupt), 413 (pixel limit) |
+| Rotation | EXIF orientation applied (HEIC: the HEIF rotation boxes) | — |
+| Metadata | All removed: EXIF (incl. GPS), ICC, XMP | — |
+| Size for OCR | Longest side ≤ 2048 px, never enlarged; transparency flattened to white; JPEG quality 90 | 422 `IMAGE_TOO_SMALL` if the longest side < 600 px |
+
+The photo is never stored or logged: it goes to OCR and is dropped.
 
 ## 9.3 Step 3 — Read the label (OCR)
 
-As v2, with one exact contract: `readLabel()` returns `raw` (the text) and `confidence`, an array with **one number per UTF-16 unit of raw** (spaces and line breaks get 1). Missing values, NaN, or an array shorter than the text are treated as 0 (unreadable).
+**Provider: Azure AI Vision Read 3.2** (`lib/ocr/azureRead.js`). Image Analysis 4.0 is not offered in Central India (the hackathon resource's region), so the asynchronous Read 3.2 API is used: `POST {endpoint}/vision/v3.2/read/analyze?language=ja` with the JPEG, then `GET` the `Operation-Location` every 1 s until `succeeded`, within `OCR_TIMEOUT_MS` in total. On the free tier (F0: 20 calls/minute, 5,000/month) every call counts, including each poll. Moving to Image Analysis 4.0 needs a resource in a supported region (e.g. Japan East) and a new adapter; note that 4.0 itself retires on 25 September 2028.
+
+`readLabel()` (`lib/ocr/index.js`) never throws and returns either `{ ok: true, raw, confidence, pageConfidence, ms }` or `{ ok: false, status: 'busy' | 'unavailable', detail, retryAfterSec? }`. The exact contract:
+
+- `confidence` has **one number per UTF-16 unit of raw**. Azure gives a confidence per **word**; each character gets its word's confidence. Spaces and the line breaks between lines get 1. A non-space character that no word accounts for gets 0 (unreadable). Missing values or NaN count as 0.
+- **Lines** are joined with line breaks (`lib/ocr/layout.js`). Horizontal lines keep Azure's order. A line at least 1.5× taller than wide (2+ characters, after undoing the page tilt Azure reports) is a **vertical column**; columns are read right to left, each top to bottom, and lines overlapping horizontally form one column. Whichever group has more characters comes first. Getting this order wrong can only produce unknown text or an incomplete list (amber), never a green.
+- `pageConfidence` is the mean over non-space characters (`null` when there are none).
+
+| Azure outcome | `detail` | Result |
+|---|---|---|
+| Key or endpoint not set | `not_configured` (Azure not called) | retake `OCR_UNAVAILABLE` |
+| 429 on upload or poll | `busy`, `retryAfterSec` from `Retry-After` (default 60, max 300) | retake `OCR_UNAVAILABLE` + `OCR_BUSY`, friendly “busy, try again in a minute” text |
+| 401 / 403 | `auth` | retake `OCR_UNAVAILABLE` |
+| 404 | `not_found` (wrong endpoint or region) | retake `OCR_UNAVAILABLE` |
+| 400 / 415 | `rejected_image` | retake `OCR_UNAVAILABLE` |
+| 5xx, network error, `failed`, malformed reply | `service_error`, `network`, `failed`, `bad_response` | retake `OCR_UNAVAILABLE` |
+| Over `OCR_TIMEOUT_MS` | `timeout` | retake `OCR_UNAVAILABLE` |
+
+Every failure is logged as one line (`op: "ocr"`, detail, HTTP status, ms), never with label text.
 
 ## 9.4 Step 4 — Page quality gate
 
-No characters, or mean confidence below `OCR_MIN_PAGE_CONFIDENCE` → `retake`. OCR failure → `retake`. Never an error status.
+No characters (`ocr.status: "no_text"`), or `pageConfidence` below `OCR_MIN_PAGE_CONFIDENCE` (`"low_confidence"`) → `retake` `OCR_LOW_PAGE_CONFIDENCE`. OCR failure → `retake` as in 9.3. Never an error status. Retake results are saved like any scan (no items, no text).
+
+The result gains `ocr: { status: 'ok' | 'busy' | 'unavailable' | 'no_text' | 'low_confidence', detail?, pageConfidence?, ms }` and, when busy, `retryAfterSec`. **Outside production only**, `ocr.text` returns what OCR read, to help test photos; it is never stored or logged. `scans.ocr_confidence` stores `pageConfidence`.
 
 ## 9.5 Step 5 — Normalise (normalize.js, confusables.js)
 
@@ -714,6 +748,7 @@ export function decideVerdict({ items, unknown, hidden, outside, lowConfidenceOt
 | `SHARED_LINE` | amber (option) | Shared production line notice |
 | `ASK_INGREDIENT` | amber | An ingredient has a tag the diet asks about |
 | `OCR_LOW_PAGE_CONFIDENCE`, `OCR_UNAVAILABLE` | retake | Set by the photo path before analysis |
+| `OCR_BUSY` | retake | Added to `OCR_UNAVAILABLE` when Azure answers 429; the “why” is the fixed busy text from `lib/text/ocrNotices.js` |
 
 `ALLERGEN_LINE_FORBIDDEN` and `ALLERGEN_LINE_ASK` from v2 are gone: allergen words are ordinary items (with `fromAllergenField` when they come from a separate field).
 
@@ -832,7 +867,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 | scan/scanText.js | scanLabel({raw, confidence, preset, options, lang}, rb); retakeResult(code, profile, lang, rb) | **built** |
 | text/templates.js | verdictLine(verdict, dietLabel, lang); templateWhy(result, lang); attachText(); LANGS; AMBER_ORDER | **built** |
 | config, db, auth, http, validation, image, ocr, llm, chef, routes, venues, privacy, events | As section 12 of v2 | to do |
-| scan/scanService.js | runScan(): photo path (9.1–9.4) then scanLabel(), save, reply | to do |
+| scan/scanService.js | runScan(): text and photo paths (9.2–9.4) then scanLabel(), save, reply | **built** (stages 1–3) |
 
 **Removed from v2:** `rulebook/parser.js`, `rulebook/allergens.js`, `rulebook/sharedLine.js` (merged into sections.js and the matcher), `scan/confidence.js` (inside analyze.js), and the wanakana dependency.
 
@@ -857,7 +892,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 | `FORBIDDEN` | 403 | You don’t have access to this. |
 | `NOT_FOUND` | 404 | We couldn’t find that. |
 | `IMAGE_TOO_LARGE` | 413 | Photo must be under 4 MB. |
-| `UNSUPPORTED_IMAGE` | 415 | Please use a JPEG, PNG or WebP photo. |
+| `UNSUPPORTED_IMAGE` | 415 | Please use a JPEG, PNG, WebP or HEIC photo. |
 | `IMAGE_TOO_SMALL` | 422 | The photo is too small to read. Move closer. |
 | `RATE_LIMITED` | 429 | Slow down a little — try again in a minute. |
 | `INTERNAL_ERROR` | 500 | Something went wrong on our side. |
@@ -891,7 +926,7 @@ Files marked **built** exist and are tested in the `shojin-pass` repository. The
 
 ## 13.4 POST /api/scan
 
-**Request:** `multipart/form-data` with `image` (required), `preset` (optional), `lang` (optional). **Response:** the result object (section 9.13) in `data`. **Errors:** 400, 401, 413, 415, 422, 429, 500.
+**Request:** `multipart/form-data` with `image` (required), `preset`, `options` (repeat the field for each), `lang` (all optional; the app sends the diet from localStorage). Session optional (B3). **Response:** the result object (section 9.13) in `data`, plus `ocr` (9.4). OCR problems, including Azure 429, are `retake` with status 200. **Errors:** 400, 413, 415, 422, 500 (429 from our own rate limit arrives in stage 6). The code block below is the v2 sketch; `app/api/scan/route.js` is the source of truth.
 
 ```js
 // app/api/scan/route.js
