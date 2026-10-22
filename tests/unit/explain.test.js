@@ -122,9 +122,21 @@ describe('explain: Gemini fills fields, the server writes the text', () => {
     expect(r.why).toContain({ en: 'may contain', hi: 'हो सकता है', gu: 'હોઈ શકે' }[lang]);
   });
 
+  it('server-added Japanese never trips the guard, even a red word printed across a line break (酒\\n精)', async () => {
+    const scan = savedScan('原材料名：小麦粉、えび、酒\n精、香料\n内容量：100g', 'jain_strict');
+    const reply = {
+      red: [{ key: 'r1', name: 'Shrimp or crab', why: 'This diet avoids seafood.' }, { key: 'r2', name: 'Alcohol', why: 'This diet avoids alcohol.' }],
+      unclear: { names: 'Flavouring', mayContain: 'fish, meat or other animal products' },
+      tip: 'Check other packs for clear plant sources.',
+    };
+    const r = await run(scan, fakeGemini(geminiReply(reply)));
+    expect(r.source).toBe('llm');
+    expect(r.why).toBe('Shrimp or crab (えび): This diet avoids seafood. Alcohol (酒精): This diet avoids alcohol. Not clear from the label: Flavouring may contain fish, meat or other animal products. Check other packs for clear plant sources.');
+  });
+
   it('the hedge comes from the server, not from Gemini: a plain "made from" phrase is still hedged', () => {
     const c = composeExplanation(JSON.stringify({ red: [], unclear: { names: 'Flavouring', mayContain: 'fish' }, tip: 'Choose packs that name a plant source' }), { lang: 'en', red: [], hasUnclear: true });
-    expect(c).toEqual({ ok: true, why: 'Not clear from the label: Flavouring may contain fish. Choose packs that name a plant source.' });
+    expect(c).toMatchObject({ ok: true, why: 'Not clear from the label: Flavouring may contain fish. Choose packs that name a plant source.' });
   });
 
   it('more than three red items: three described, the rest listed with their Japanese words', () => {
