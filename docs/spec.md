@@ -792,9 +792,12 @@ Built in stage 4 (`lib/llm/`). The LLM is **Google Gemini**, model `gemini-3.5-f
 
 ## 11.1 What the LLM may and may not do
 
-- It writes **3–5 short sentences** (at most 700 characters) in the user's language: what the flagged ingredients are, why they matter for this diet, and one practical tip (what to look for instead, or what to ask staff with the chef card). This replaces v2's “one or two sentences, 200 characters”.
+- It writes **3–5 short sentences** (at most 700 characters) in the user's language. This replaces v2's “one or two sentences, 200 characters”.
+  - **Definitely avoided** (red items in the list): said plainly, why they are avoided, each with its **Japanese word** in brackets so the traveller learns to spot it, e.g. “alcohol (酒精)”, “shrimp or crab (えび, かに)”.
+  - **Unclear source** (ask items such as flavouring, enzyme, seasoning, and flagged words seen outside the list or inside unknown words): in a separate sentence, always hedged (“may”, “might”), never presented as definite.
+  - **One tip that fits the context**: for a packaged product (every label scan), what to look for on other packs; the chef card only for restaurant food.
 - It never states, repeats or changes the verdict. The verdict line above it is fixed text.
-- It never receives label text, photos, user ids or scan ids.
+- It never receives photos, user ids, scan ids or free label text. The only Japanese it receives is the spelling of each red item, and only a spelling the rulebook itself lists for that ingredient (else the rulebook's canonical spelling).
 - It is only called for **red and amber** scans. Green and retake scans get the template “why” without a call.
 - It is optional: if disabled, without a key, slow, failing, rate-limited or rejected, the template “why” stays.
 
@@ -807,21 +810,24 @@ Built only from the saved scan and the rulebook (`buildInput()` in `lib/llm/expl
   "language": "hi",
   "diet": "शाकाहारी",
   "result": "red",
-  "reasons": ["contains an ingredient this diet avoids", "an avoided ingredient is mentioned elsewhere on the label"],
-  "flagged": [
-    { "meaning": "Lard (pork fat)", "found": "in the ingredient list",
-      "concern": [ { "tag": "पशु वसा", "level": "avoided by this diet" } ] }
+  "context": "packaged_product",
+  "definitelyAvoided": [
+    { "meaning": "Lard (pork fat)", "japanese": ["ラード"], "avoidedBecause": ["मांस", "पशु वसा"] }
   ],
+  "unclearSource": [
+    { "meaning": "Pork", "found": "mentioned elsewhere on the label, not in the ingredient list", "mayBe": ["मांस"] }
+  ],
+  "reasons": ["contains an ingredient this diet avoids", "an avoided ingredient is mentioned elsewhere on the label"],
   "unknownWordCount": 0,
   "unclearWordCount": 0
 }
 ```
 
-`flagged` comes from items with `FORBIDDEN_INGREDIENT` / `ASK_INGREDIENT` and from `scans.details` (hidden and outside words), at most 6, using rulebook meanings and tag labels. Unknown words are sent as a count only, because they are label text.
+`definitelyAvoided` comes from items with `FORBIDDEN_INGREDIENT`; `japanese` is the label's spelling only when `normalizeAlias(spelling)` belongs to that same ingredient in the rulebook (NFKC, so ｴﾋﾞ becomes エビ), else the canonical spelling. `unclearSource` comes from `ASK_INGREDIENT` items and from `scans.details` (hidden and outside words) and never carries Japanese. At most 5 per group. Unknown words are sent as a count only. `context` is `packaged_product` for every label scan; `restaurant_food` is reserved for dishes (chef card).
 
 ## 11.3 System prompt
 
-`SYSTEM_PROMPT` in `lib/llm/explain.js` is the source of truth. It asks for 3–5 sentences in the given language and script, only the flagged ingredients, never any word about the food being safe, suitable, fine, okay, allowed or edible (not even negated), “could not be fully checked” for amber, no numbers with units, links, brands or Japanese, and JSON only: `{"why": "..."}`.
+`SYSTEM_PROMPT` in `lib/llm/explain.js` is the source of truth (`PROMPT_VERSION` 2). It asks for 3–5 sentences in the given language and script: the definitely avoided items with their Japanese words, the unclear items separately and hedged, and a tip for the context (no chef card for packaged products); only the listed ingredients; never any word about the food being safe, suitable, fine, okay, allowed or edible (not even negated); “could not be fully checked” for amber; no Japanese except the words given; no numbers with units, links or brands; JSON only: `{"why": "..."}`.
 
 ## 11.4 Validation (llm/guard.js)
 
@@ -833,6 +839,10 @@ The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) 
 - A digit followed by %, or a link.
 - Wrong language: English must contain no Devanagari or Gujarati; Hindi must be ≥ 60 % Devanagari letters and no Gujarati; Gujarati ≥ 60 % Gujarati letters and no Devanagari. Any Japanese character rejects the reply (it could only come from label text).
 - English, with flagged items: no key word (4+ letters) of any flagged meaning appears.
+- Japanese: only the red items' Japanese words, exactly as given, are allowed (they are removed before the script check); any other Japanese rejects the reply.
+- Unclear items present but no hedge word (en: may, might, could, possibly, unclear, not stated …; hi: सकता/सकती/सकते, शायद, स्पष्ट नहीं …; gu: શકે, કદાચ, સ્પષ્ટ નથી …) → `unclear_not_hedged`.
+- English: a sentence that names an unclear item and says definitely / certainly / surely / clearly → `unclear_stated_as_definite`.
+- Packaged product (every label scan) and the reply mentions the chef card, a restaurant or kitchen staff (en/hi/gu) → `chef_card_for_product`.
 
 | Language | Banned phrases (extend in guard.js) |
 |---|---|
@@ -848,7 +858,7 @@ The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) 
 2. The app calls `POST /api/scan/{id}/explain` (optional body `{ "lang" }`; default: the scan's language).
 3. The server loads the scan **with the user's client**, so row security hides other users' scans (→ 404, same as a missing scan).
 4. Green or retake → template, no call. LLM off or no key → template.
-5. **Cache:** `scan_explanations` (scan + language). A cached answer is returned without calling Gemini or counting quota.
+5. **Cache:** `scan_explanations` (scan + language). A cached answer is returned without calling Gemini or counting quota, but only if it was written by the current model and prompt (`model` column holds `<model>|prompt-<PROMPT_VERSION>`); older answers are regenerated and overwritten.
 6. **Per-user limit:** `LLM_USER_PER_MIN` (5) and `LLM_USER_PER_DAY` (50) Gemini calls per user, counted in `llm_calls` **before** calling, so parallel requests count too. Over the limit → template. If the limit cannot be checked (database trouble) → template, no call.
 7. Gemini with `LLM_TIMEOUT_MS` (5 s; off the critical path). Timeout, 429, 4xx/5xx, blocked prompt, a cut-off answer (`finishReason` not `STOP`) → template.
 8. Guard (11.4) → template if rejected. Accepted text is cached and returned with `source: "llm"`.
