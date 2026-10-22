@@ -21,6 +21,10 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
   const [text, setText] = useState('原材料名：小麦粉、砂糖、ラード\n内容量：100g');
   const [out, setOut] = useState(null);
   const [photo, setPhoto] = useState(null); // { url, note, busy, summary }
+  const [lastScan, setLastScan] = useState(null); // { scanId, verdict, why }
+  const [explainLang, setExplainLang] = useState('');
+  const [note, setNote] = useState('');
+  const remember = (r) => r?.data && setLastScan({ scanId: r.data.scanId, verdict: r.data.verdict, why: r.data.why });
 
   useEffect(() => {
     client.syncDiet().then((r) => r.diet && setDiet(r.diet));
@@ -44,6 +48,7 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
       (shrunk ? ` → shrunk to ${(blob.size / 1024).toFixed(0)} KB JPEG` : ' → sent as is (browser could not shrink it)');
     setPhoto({ url: URL.createObjectURL(blob), note, busy: true });
     const r = await client.scanPhoto(blob, filename);
+    remember(r);
     const d = r.data;
     const summary = d
       ? [`verdict: ${d.verdict}  (${d.reasons.join(', ') || 'no reasons'})`, `${d.verdictLine} — ${d.why}`,
@@ -97,7 +102,11 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
       <section style={box}>
         <h2 style={{ fontSize: 17 }}>3. Text scan</h2>
         <textarea rows={4} style={{ width: '100%' }} value={text} onChange={(e) => setText(e.target.value)} />
-        <button onClick={async () => show('scanText', await client.scanText(text))}>Scan</button>
+        <button onClick={async () => {
+          const r = await client.scanText(text);
+          remember(r);
+          show('scanText', r);
+        }}>Scan</button>
       </section>
 
       <section style={box}>
@@ -117,6 +126,29 @@ export default function DevConsole({ supabaseUrl, supabaseAnonKey, turnstileSite
             <p style={{ fontSize: 12, color: '#555' }}>{photo.note}</p>
             <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{photo.busy ? 'Reading the label…' : photo.summary}</pre>
           </div>
+        )}
+      </section>
+
+      <section style={box}>
+        <h2 style={{ fontSize: 17 }}>3c. Explain and feedback (last scan)</h2>
+        {!lastScan ? <p>Scan something first (text or photo).</p> : !lastScan.scanId ? (
+          <p>The last scan was not saved (no session or Supabase unavailable), so it cannot be explained or rated. Sign in and scan again.</p>
+        ) : (
+          <>
+            <p style={{ fontSize: 13 }}>Scan {lastScan.scanId} · {lastScan.verdict}<br />Template why: {lastScan.why}</p>
+            <label>Language{' '}
+              <select value={explainLang} onChange={(e) => setExplainLang(e.target.value)}>
+                <option value="">scan language</option>
+                {['en', 'hi', 'gu'].map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </label>{' '}
+            <button onClick={async () => show('explain', await client.explain(lastScan.scanId, explainLang || undefined))}>Explain</button>
+            <div style={{ marginTop: 8 }}>
+              <input placeholder="Optional comment (max 500)" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} style={{ width: '60%' }} />{' '}
+              <button onClick={async () => show('feedback: wrong_verdict', await client.sendFeedback(lastScan.scanId, 'wrong_verdict', note))}>Verdict is wrong</button>{' '}
+              <button onClick={async () => show('feedback: unclear', await client.sendFeedback(lastScan.scanId, 'unclear', note))}>Unclear</button>
+            </div>
+          </>
         )}
       </section>
 

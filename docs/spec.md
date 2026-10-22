@@ -75,7 +75,7 @@ Decided while building the backend in stages (see `CLAUDE.md`). Where this table
 | B5 | **Explicit grants and RLS**; users read/change only their own rows; scans and feedback written only by the server | Project has “Automatically expose new tables” off; users must not forge verdicts | 14 | 2 |
 | B6 | **No photos stored**: no bucket, no `store_photos`, `STORE_SCAN_IMAGES` and `IMAGE_RETENTION_DAYS` removed; scans keep matched ingredients, not label text | Less personal data | 14, 16.2 | 2 |
 | B7 | **OCR is Azure AI Vision Read 3.2** (language `ja`): Image Analysis 4.0 was planned but is not offered in Central India, the resource's region. Each character gets its word's confidence; keys `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY` | Replaces Google Cloud Vision | 3.2, 9.3 | 3 |
-| B8 | **LLM is the Google Gemini API** (key from Google AI Studio). `/api/scan/{id}/explain` as in section 11; no key, disabled, slow or failing → template “why” | Free tier; the explanation never decides or changes a verdict | 3.2, 11 | 4 |
+| B8 | **LLM is the Google Gemini API**, `gemini-3.5-flash-lite`, minimal thinking (key from Google AI Studio). 3–5 sentences, red/amber only, cached per scan and language, per-user limit; no key, disabled, slow, 429 or rejected → template “why”. Feedback adds `unclear` (migration 002) | Free tier; the explanation never decides or changes a verdict | 3.2, 11, 13.6, 13.7, 14 | 4 |
 | B9 | **Venues and routes from JSON files**, not tables | Small, hand-checked data; fewer moving parts | 14.6, 15 | 5 |
 | B10 | **`GET /api/insights`**: verdict-colour counts and the top 10 red ingredients, no user ids | Partner KPIs without personal data | 13.3 | 5 |
 | B11 | **Daily Vercel Cron hits the deep health check**, which queries Supabase (the free project never pauses) and runs retention; simple rate limits; deployment | Free Supabase projects pause when idle | 13.12, 19 | 6 |
@@ -315,8 +315,12 @@ shojin-pass/
 │   ├── scan/scanService.js                 # the conductor for photo scans
 │   ├── scan/scanRepo.js                    # save / load scan rows
 │   ├── text/templates.js                   # BUILT: verdict lines + template "why" (en/hi/gu)
-│   ├── llm/explain.js                      # LLM call, timeout, validation
-│   ├── llm/guard.js                        # NEW: banned phrases in en/hi/gu
+│   ├── llm/explain.js                      # prompt input from the saved scan, cache, limit, fallback
+│   ├── llm/gemini.js                       # Gemini generateContent over REST
+│   ├── llm/guard.js                        # NEW: banned phrases, length, language checks (en/hi/gu)
+│   ├── scan/savedScan.js                   # template "why" rebuilt from a saved row
+│   ├── scan/scanActions.js                 # explain / feedback for your own scan
+│   ├── db/scans.js                         # own scan (RLS), explanation cache, LLM log, feedback
 │   ├── chef/cardBuilder.js
 │   ├── chef/replies.js                     # pilot
 │   ├── routes/routeService.js
@@ -367,10 +371,12 @@ Every key and tunable number lives in an environment variable. Real values go in
 | `SUPABASE_TIMEOUT_MS` | No | Every Supabase call gives up after this; scans still return their verdict | `1500` |
 | `AZURE_VISION_ENDPOINT` | **Yes** | Azure AI Vision resource endpoint (`https://<name>.cognitiveservices.azure.com/`) | From Azure portal |
 | `AZURE_VISION_KEY` | **Yes** | Azure AI Vision key | From Azure portal |
-| `LLM_API_KEY` | **Yes** | Google Gemini API key (optional: without it the template “why” is used) | From Google AI Studio |
-| `LLM_MODEL` | No | Exact id of a small, fast Gemini model | Copy from the Gemini API docs |
+| `LLM_API_KEY` | **Yes** | Google Gemini API key; only checked to be non-empty (new keys start `AQ.`). Without it the template “why” is used | From Google AI Studio |
+| `LLM_MODEL` | No | Gemini model id | `gemini-3.5-flash-lite` |
+| `LLM_THINKING_LEVEL` | No | `minimal` (lowest for this model); `none` omits it | `minimal` |
 | `LLM_ENABLED` | No | Master switch for the LLM | `true` |
-| `LLM_TIMEOUT_MS` | No | Give up and keep the template | `2000` |
+| `LLM_TIMEOUT_MS` | No | Give up and keep the template (explanations are off the critical path) | `5000` |
+| `LLM_USER_PER_MIN` / `LLM_USER_PER_DAY` | No | Gemini calls per user (cache hits are free) | `5` / `50` |
 | `OCR_TIMEOUT_MS` | No | Total time for the Read upload and all polls; then `retake` | `4000` |
 | `OCR_MIN_PAGE_CONFIDENCE` | No | Below this average → `retake` | `0.80` (tune on tuning set only) |
 | `OCR_MIN_CHAR_CONFIDENCE` | No | Any ingredient containing a character below this → amber | `0.70` (tune on tuning set only) |
@@ -782,71 +788,74 @@ All templates exist in English, Hindi and Gujarati in `lib/text/templates.js`; H
 
 # 11. Explanation (LLM) design
 
+Built in stage 4 (`lib/llm/`). The LLM is **Google Gemini**, model `gemini-3.5-flash-lite` (stable Flash-Lite; `LLM_MODEL`), called over REST (`generateContent`) with the key in the `x-goog-api-key` header, JSON output, temperature 0.2 and `thinkingConfig.thinkingLevel: "minimal"` (the lowest level this model accepts; `LLM_THINKING_LEVEL`, `none` omits the setting). Keys from Google AI Studio now start with `AQ.`; any non-empty key is accepted. Some accounts report `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` for such keys; that is logged with its reason and the template is shown.
+
 ## 11.1 What the LLM may and may not do
 
-- It writes **one or two short sentences** explaining *why*, in the user’s language.
+- It writes **3–5 short sentences** (at most 700 characters) in the user's language: what the flagged ingredients are, why they matter for this diet, and one practical tip (what to look for instead, or what to ask staff with the chef card). This replaces v2's “one or two sentences, 200 characters”.
 - It never states, repeats or changes the verdict. The verdict line above it is fixed text.
-- It never receives raw OCR text. A label that says “ignore your instructions” has nothing to reach.
-- It is optional: if disabled, slow, failing or rejected, the template “why” stays.
+- It never receives label text, photos, user ids or scan ids.
+- It is only called for **red and amber** scans. Green and retake scans get the template “why” without a call.
+- It is optional: if disabled, without a key, slow, failing, rate-limited or rejected, the template “why” stays.
 
 ## 11.2 Input sent to the model
+
+Built only from the saved scan and the rulebook (`buildInput()` in `lib/llm/explain.js`):
 
 ```json
 {
   "language": "hi",
-  "diet": "Jain (strict)",
-  "verdict": "red",
+  "diet": "शाकाहारी",
+  "result": "red",
+  "reasons": ["contains an ingredient this diet avoids", "an avoided ingredient is mentioned elsewhere on the label"],
   "flagged": [
-    { "meaning": "Bonito fish flakes or stock", "reason": "FORBIDDEN_INGREDIENT" },
-    { "meaning": "Onion", "reason": "FORBIDDEN_INGREDIENT" }
+    { "meaning": "Lard (pork fat)", "found": "in the ingredient list",
+      "concern": [ { "tag": "पशु वसा", "level": "avoided by this diet" } ] }
   ],
-  "unknownCount": 0,
-  "incomplete": false
+  "unknownWordCount": 0,
+  "unclearWordCount": 0
 }
 ```
 
+`flagged` comes from items with `FORBIDDEN_INGREDIENT` / `ASK_INGREDIENT` and from `scans.details` (hidden and outside words), at most 6, using rulebook meanings and tag labels. Unknown words are sent as a count only, because they are label text.
+
 ## 11.3 System prompt
 
-```
-You explain the result of a food-label check to an Indian traveller in Japan.
-The verdict has already been decided and is shown to the user separately.
-
-Rules:
-- Write one or two short sentences, at most 200 characters in total.
-- Write only in the language given by "language" (en = English, hi = Hindi, gu = Gujarati).
-- Do not state, repeat or change the verdict.
-- Never say or imply that the food is safe, suitable, fine, okay or allowed to eat.
-- Mention only the ingredients in "flagged", using their meanings. Do not add others.
-- If verdict is "amber", suggest asking staff and using the chef card.
-- Reply with JSON only: {"why": "..."}
-```
+`SYSTEM_PROMPT` in `lib/llm/explain.js` is the source of truth. It asks for 3–5 sentences in the given language and script, only the flagged ingredients, never any word about the food being safe, suitable, fine, okay, allowed or edible (not even negated), “could not be fully checked” for amber, no numbers with units, links, brands or Japanese, and JSON only: `{"why": "..."}`.
 
 ## 11.4 Validation (llm/guard.js)
 
-The reply is thrown away (template kept) if ANY of these is true:
+The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) if ANY of these is true:
 
-- Not valid JSON, no `why` string, or longer than 220 characters.
-- It contains a banned phrase (case-insensitive) in any of the three languages — checked for **every** verdict, not just red.
-- Language `en` and none of the flagged meanings’ key words appear (when there are flagged items).
-- It contains a digit followed by % or a URL.
+- Not JSON (a ```json fence is tolerated), no `why` string, or empty after trimming.
+- Longer than 700 characters, or more than 6 sentences.
+- It contains a banned phrase in any of the three languages — for **every** verdict. English phrases match whole words (so “look for” is fine), except **safe**, which matches anywhere (“unsafe” is rejected too).
+- A digit followed by %, or a link.
+- Wrong language: English must contain no Devanagari or Gujarati; Hindi must be ≥ 60 % Devanagari letters and no Gujarati; Gujarati ≥ 60 % Gujarati letters and no Devanagari. Any Japanese character rejects the reply (it could only come from label text).
+- English, with flagged items: no key word (4+ letters) of any flagged meaning appears.
 
-| Language | Banned phrases (starting list; extend in guard.js) |
+| Language | Banned phrases (extend in guard.js) |
 |---|---|
-| English | safe, suitable, fine to eat, okay to eat, ok to eat, can eat, allowed, permitted, no problem, vegetarian-friendly, jain-friendly |
-| Hindi | सुरक्षित, उपयुक्त, खा सकते, खा सकती, ठीक है, कोई समस्या नहीं, अनुमति |
-| Gujarati | સુરક્ષિત, યોગ્ય, ખાઈ શકો, ખાઈ શકાય, બરાબર છે, કોઈ વાંધો નથી, મંજૂરી |
+| English | safe, suitable, fine to eat, fine for you, okay, ok to eat, ok for you, can eat, can have, allowed, permitted, no problem, no issue, acceptable, go ahead, enjoy, vegetarian-friendly, jain-friendly, verdict |
+| Hindi | सुरक्षित, उपयुक्त, खा सकते, खा सकती, खा सकता, ठीक है, कोई समस्या नहीं, अनुमति, चिंता न करें, चिंता की कोई बात नहीं |
+| Gujarati | સુરક્ષિત, યોગ્ય, ખાઈ શકો, ખાઈ શકાય, બરાબર છે, કોઈ વાંધો નથી, મંજૂરી, ચિંતા ન કરો |
 
-> **Note:** “उपयुक्त” and “યોગ્ય” are banned even though the fixed red line uses them in the negative (“उपयुक्त नहीं”). The LLM is not allowed to talk about suitability at all, so a blunt ban is correct here.
+> **Note:** “उपयुक्त” and “યોગ્ય” are banned even though the fixed red line uses them in the negative. The LLM is not allowed to talk about suitability at all, so a blunt ban is correct here.
 
 ## 11.5 When the explanation is fetched
 
-1. `POST /api/scan` replies with the template `why` (verdict on screen in about 2 seconds).
-2. The app immediately calls `POST /api/scan/{id}/explain`.
-3. The server loads the scan (owner only), returns the cached LLM text if present, otherwise calls the LLM with `LLM_TIMEOUT_MS`, validates, stores `explanation` + `explanation_source = 'llm'`, and returns it.
-4. On any failure it returns the template with `source: 'template'` and status 200. This endpoint never returns an error for an LLM problem.
-5. The app swaps the sentence in place when it arrives. The verdict and colours never change.
+1. `POST /api/scan` (or `/scan/text`) replies with the template `why`.
+2. The app calls `POST /api/scan/{id}/explain` (optional body `{ "lang" }`; default: the scan's language).
+3. The server loads the scan **with the user's client**, so row security hides other users' scans (→ 404, same as a missing scan).
+4. Green or retake → template, no call. LLM off or no key → template.
+5. **Cache:** `scan_explanations` (scan + language). A cached answer is returned without calling Gemini or counting quota.
+6. **Per-user limit:** `LLM_USER_PER_MIN` (5) and `LLM_USER_PER_DAY` (50) Gemini calls per user, counted in `llm_calls` **before** calling, so parallel requests count too. Over the limit → template. If the limit cannot be checked (database trouble) → template, no call.
+7. Gemini with `LLM_TIMEOUT_MS` (5 s; off the critical path). Timeout, 429, 4xx/5xx, blocked prompt, a cut-off answer (`finishReason` not `STOP`) → template.
+8. Guard (11.4) → template if rejected. Accepted text is cached and returned with `source: "llm"`.
+9. **Never an error for an LLM problem:** status 200 with `source: "template"` and a `fallbackReason` (e.g. `llm_busy`, `llm_timeout`, `user_limit`, `rejected_banned_phrase`).
+10. The app swaps the sentence in place when it arrives. The verdict and colours never change.
 
-This endpoint has its own rate limit bucket (`explain`, same numbers as scans).
+The template “why” for a saved scan is rebuilt in any language from the row (`lib/scan/savedScan.js`): matched items, unknown and unclear terms, and `scans.details` (hidden and outside words, shared-line mentions). A test checks it equals the template the engine produced at scan time.
 
 # 12. Module contracts (lib/)
 
@@ -981,11 +990,11 @@ JSON body `{ "text": "原材料名：…", "preset": "vegetarian", "options": []
 
 ## 13.6 POST /api/scan/{id}/explain
 
-No body. Owner only (`404 NOT_FOUND` for someone else’s scan, so ids cannot be probed). Response: `{ "scanId": "…", "why": "…", "source": "llm" | "template" }`.
+Session required (401). Optional body `{ "lang": "en" | "hi" | "gu" }` (default: the scan's language). Owner only: `404 NOT_FOUND` for someone else’s scan or a malformed id, so ids cannot be probed. Response: `{ "scanId", "lang", "why", "source": "llm" | "template", "cached"?, "fallbackReason"? }`. LLM problems are never errors (11.5).
 
 ## 13.7 POST /api/scan/{id}/feedback
 
-Body `{ "kind": "wrong_verdict" | "unreadable" | "helpful", "note": "…" }` (note optional, max 500 characters). Owner only. `wrong_verdict` on a green scan is stored with `priority = true` (possible false safe, reviewed first).
+Body `{ "kind": "wrong_verdict" | "unclear" | "unreadable" | "helpful", "note": "…" }` (note optional, max 500 characters; control characters removed). Session required; owner only (404 otherwise). Stored by the server in `scan_feedback`, one row per scan, user and kind (sending the same kind again replaces the note). `wrong_verdict` on a green scan is stored with `priority = true` (possible false safe, reviewed first). Response `{ "scanId", "kind", "saved": true, "priority" }`. The note is never sent to the LLM.
 
 ## 13.8 GET, PUT, DELETE /api/profile
 
@@ -1031,8 +1040,12 @@ Body `{ "preset": "jain_strict", "options": [], "dishNameJa": "野菜の天ぷ�
 | Table | One row per | Holds |
 |---|---|---|
 | `profiles` | User (created by a trigger on every new auth user, anonymous included) | `diet_preset`, `options`, `language`, `role`, timestamps |
-| `scans` | Scan | Source, diet used, verdict, reasons, matched ingredients (`items`), unknown and low-confidence terms, completeness, OCR confidence, rulebook version, latency. **No label text and no photo.** |
-| `scan_feedback` | Feedback tap | Scan, user, kind, note (≤ 500), `priority` (wrong verdict on a green scan) |
+| `scans` | Scan | Source, diet used, verdict, reasons, matched ingredients (`items`), `details` (hidden/outside words and shared-line mentions, 002), unknown and low-confidence terms, completeness, OCR confidence, rulebook version, latency. **No label text and no photo.** |
+| `scan_feedback` | Feedback tap | Scan, user, kind (`wrong_verdict`, `unclear` (002), `unreadable`, `helpful`), note (≤ 500), `priority` (wrong verdict on a green scan); unique per scan, user and kind (002) |
+| `scan_explanations` (002) | Scan + language | Cached LLM “why” and the model that wrote it |
+| `llm_calls` (002) | Gemini call | User and time, for the per-user limit; deleted after 2 days by `apply_retention` |
+
+Migrations run in order: `001_init.sql`, then `002_explain_feedback.sql` (stage 4). `tests/db/` runs both in PGlite.
 
 Venues, routes and route stops are **JSON files** in the repo (stage 5), not tables. Events, products, unknown terms, chef replies and bookings are pilot tables and are not created yet. `/api/insights` (stage 5) reads verdict counts and red ingredients from `scans` with the service role and returns no user ids.
 
@@ -1046,6 +1059,8 @@ The `profiles` check constraints list exactly the presets in `rulebook/diets.jso
 | `authenticated` | Signed-in user, anonymous included | read own; insert own (id + diet columns); update own diet columns only (`diet_preset`, `options`, `language`) | read own | read own |
 | `service_role` | The server only | all | all | all |
 
+`scan_explanations`: users read the rows of their own scans; only the server writes. `llm_calls`: no browser access at all (no policies), server only.
+
 - **Users never write scans or feedback.** Otherwise anyone could insert a scan with a forged verdict using the public key. The server writes both with the service role, after the engine has decided.
 - **`role` is protected twice:** no column grant, and a trigger that refuses a role change from `anon` / `authenticated`.
 - **Deletion:** `DELETE /api/profile` deletes the auth user; profiles, scans and feedback go by cascade.
@@ -1055,7 +1070,8 @@ The `profiles` check constraints list exactly the presets in `rulebook/diets.jso
 ## 14.3 How the server talks to Supabase
 
 - **As the user** (`lib/db/supabaseServer.js`, public key + session cookie): `getUser()` and every `/api/profile` read and write. Row security and the column grants do the enforcing.
-- **As the server** (`lib/db/supabaseAdmin.js`, service-role key): saving scans (`lib/scan/scanRepo.js`), feedback (stage 4), deleting users, retention, insights. Every call names the user id explicitly.
+- **As the user**, also: loading a scan to explain or rate it (`getOwnScan` in `lib/db/scans.js`); row security is the ownership check.
+- **As the server** (`lib/db/supabaseAdmin.js`, service-role key): saving scans (`lib/scan/scanRepo.js`), feedback, the explanation cache and LLM call log (`lib/db/scans.js`), deleting users, retention, insights. Every call names the user id explicitly.
 - Every Supabase call uses a fetch that gives up after `SUPABASE_TIMEOUT_MS` (1.5 s), and the scan path also races each call against the same limit.
 
 ## 14.4 Scanning never depends on Supabase (from stage 2)

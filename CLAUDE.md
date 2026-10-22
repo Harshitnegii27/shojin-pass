@@ -38,10 +38,15 @@ Commit at the end of a stage only if every test passes. The test count may grow;
    5,000/month; every poll counts). Every character gets its word's confidence.
    Keys: `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`. Automated tests never call Azure
    (`tests/setup/noNetwork.js` blocks the network).
-4. `/api/scan/{id}/explain` with the LLM as in spec 11, using the **Google Gemini API** (free key from
-   Google AI Studio; `LLM_API_KEY`, `LLM_MODEL`), plus `/api/scan/{id}/feedback` (spec 11, 13.6, 13.7).
-   The LLM only writes the "why" sentence; it never decides or changes a verdict. If it is disabled,
-   has no key, times out or fails, the scan still works and shows the template "why".
+4. Built, waiting for migration 002 and my test with the real Gemini key. `/api/scan/{id}/explain` with
+   the LLM as in spec 11, using the **Google Gemini API**, model `gemini-3.5-flash-lite`, thinking
+   `minimal` (free key from Google AI Studio; `LLM_API_KEY` starts "AQ.", only checked to be non-empty),
+   plus `/api/scan/{id}/feedback` (`wrong_verdict`, `unclear`, …) (spec 11, 13.6, 13.7).
+   `supabase/migrations/002_explain_feedback.sql` adds the explanation cache, the LLM call log and
+   `scans.details`. The LLM only writes the "why" (3–5 sentences, red/amber only); it never decides or
+   changes a verdict and never sees label text, photos or ids. If it is disabled, has no key, times
+   out, hits 429 or the per-user limit, or its answer fails the guard, the template "why" is shown.
+   Automated tests never call Gemini.
 5. Chef card, routes (with sunset rule), venues **from JSON files** (spec 15, 13.9–13.11), and
    `/api/insights`: verdict-colour counts and the top 10 red ingredients, no user IDs.
 6. A daily Vercel Cron job hitting a deep health check that queries Supabase (so the free project
