@@ -32,7 +32,7 @@ Commit at the end of a stage only if every test passes. The test count may grow;
 2. Done (migration applied to the real project; sign-in, saving the diet and a saved scan tested on
    the laptop, 22 October 2026). Supabase: `supabase/migrations/001_init.sql` (profiles, scans,
    scan_feedback), anonymous login with Turnstile, `/api/profile` GET/PUT/DELETE (spec 13.8, 14).
-3. Built, waiting for my test with real photos. Photo scans: `prepareImage`, Azure AI Vision in
+3. Done (tested with a real label photo, 22 October 2026). Photo scans: `prepareImage`, Azure AI Vision in
    `readLabel`, `/api/scan`, saving scans (spec 9.1–9.4, 9.12, 13.4). **Uses Read 3.2** (language `ja`):
    Image Analysis 4.0 is not available in Central India, my resource's region (Free F0: 20 calls/minute,
    5,000/month; every poll counts). Every character gets its word's confidence.
