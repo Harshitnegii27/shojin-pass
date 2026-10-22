@@ -788,16 +788,17 @@ All templates exist in English, Hindi and Gujarati in `lib/text/templates.js`; H
 
 # 11. Explanation (LLM) design
 
-Built in stage 4 (`lib/llm/`). The LLM is **Google Gemini**, model `gemini-3.5-flash-lite` (stable Flash-Lite; `LLM_MODEL`), called over REST (`generateContent`) with the key in the `x-goog-api-key` header, JSON output, temperature 0.2 and `thinkingConfig.thinkingLevel: "minimal"` (the lowest level this model accepts; `LLM_THINKING_LEVEL`, `none` omits the setting). Keys from Google AI Studio now start with `AQ.`; any non-empty key is accepted. Some accounts report `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` for such keys; that is logged with its reason and the template is shown.
+Built in stage 4 (`lib/llm/`). The LLM is **Google Gemini**, model `gemini-3.5-flash-lite` (stable Flash-Lite; `LLM_MODEL`), called over REST (`generateContent`) with the key in the `x-goog-api-key` header, **structured output** (`responseMimeType: "application/json"` + `responseSchema`), temperature 0.2 and `thinkingConfig.thinkingLevel: "minimal"` (the lowest level this model accepts; `LLM_THINKING_LEVEL`, `none` omits the setting). Keys from Google AI Studio now start with `AQ.`; any non-empty key is accepted. Some accounts report `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` for such keys; that is logged with its reason and the template is shown.
 
 ## 11.1 What the LLM may and may not do
 
-- It writes **3–5 short sentences** (at most 700 characters) in the user's language. This replaces v2's “one or two sentences, 200 characters”.
-  - **Definitely avoided** (red items in the list): said plainly, why they are avoided, each with its **Japanese word** in brackets so the traveller learns to spot it, e.g. “alcohol (酒精)”, “shrimp or crab (えび, かに)”.
-  - **Unclear source** (ask items such as flavouring, enzyme, seasoning, and flagged words seen outside the list or inside unknown words): in a separate sentence, always hedged (“may”, “might”), never presented as definite.
+- **Reliable by design (prompt v3):** Gemini only fills short structured fields; the **server writes the text** (`lib/llm/compose.js`). This replaces v2's “one or two sentences, 200 characters” and the free-text v2 prompt.
+  - **Definitely avoided** (red items in the list), one sentence each: `{name} ({Japanese}): {why}`. The Japanese word (so the traveller learns to spot it) is added by the server, never written by Gemini. Up to 3 described; more go in one fixed “Also avoided: …” sentence.
+  - **Unclear source** (ask items such as flavouring, enzyme, seasoning, and flagged words seen outside the list or inside unknown words): only ever inside one fixed hedged sentence — en “Not clear from the label: {names} may contain {mayContain}.”, hi “लेबल से साफ़ नहीं है: {names} में {mayContain} हो सकता है।”, gu “લેબલ પરથી સ્પષ્ટ નથી: {names} માં {mayContain} હોઈ શકે.” Gemini supplies only the names and a noun phrase. (Hindi and Gujarati frames need a native speaker's check.)
   - **One tip that fits the context**: for a packaged product (every label scan), what to look for on other packs; the chef card only for restaurant food.
 - It never states, repeats or changes the verdict. The verdict line above it is fixed text.
-- It never receives photos, user ids, scan ids or free label text. The only Japanese it receives is the spelling of each red item, and only a spelling the rulebook itself lists for that ingredient (else the rulebook's canonical spelling).
+- It never receives photos, user ids, scan ids, label text or **any Japanese**. The Japanese words stay on the server: the label's spelling of each red item, only when the rulebook lists that spelling for the same ingredient (else the rulebook's canonical spelling).
+- If nothing is flagged (amber for a cut-off list, unknown words …), the template already says it: no call (`fallbackReason: "nothing_to_explain"`).
 - It is only called for **red and amber** scans. Green and retake scans get the template “why” without a call.
 - It is optional: if disabled, without a key, slow, failing, rate-limited or rejected, the template “why” stays.
 
@@ -812,7 +813,7 @@ Built only from the saved scan and the rulebook (`buildInput()` in `lib/llm/expl
   "result": "red",
   "context": "packaged_product",
   "definitelyAvoided": [
-    { "meaning": "Lard (pork fat)", "japanese": ["ラード"], "avoidedBecause": ["मांस", "पशु वसा"] }
+    { "key": "r1", "meaning": "Lard (pork fat)", "avoidedBecause": ["मांस", "पशु वसा"] }
   ],
   "unclearSource": [
     { "meaning": "Pork", "found": "mentioned elsewhere on the label, not in the ingredient list", "mayBe": ["मांस"] }
@@ -823,18 +824,28 @@ Built only from the saved scan and the rulebook (`buildInput()` in `lib/llm/expl
 }
 ```
 
-`definitelyAvoided` comes from items with `FORBIDDEN_INGREDIENT`; `japanese` is the label's spelling only when `normalizeAlias(spelling)` belongs to that same ingredient in the rulebook (NFKC, so ｴﾋﾞ becomes エビ), else the canonical spelling. `unclearSource` comes from `ASK_INGREDIENT` items and from `scans.details` (hidden and outside words) and never carries Japanese. At most 5 per group. Unknown words are sent as a count only. `context` is `packaged_product` for every label scan; `restaurant_food` is reserved for dishes (chef card).
+`definitelyAvoided` comes from items with `FORBIDDEN_INGREDIENT`, each with a `key` (r1, r2 …) that Gemini must echo; the server keeps `japanese` (removed by `geminiInput()` before sending): the label's spelling only when `normalizeAlias(spelling)` belongs to that same ingredient in the rulebook (NFKC, so ｴﾋﾞ becomes エビ), else the canonical spelling. `unclearSource` comes from `ASK_INGREDIENT` items and from `scans.details` (hidden and outside words) and never carries Japanese. At most 5 per group. Unknown words are sent as a count only. `context` is `packaged_product` for every label scan; `restaurant_food` is reserved for dishes (chef card).
 
 ## 11.3 System prompt
 
-`SYSTEM_PROMPT` in `lib/llm/explain.js` is the source of truth (`PROMPT_VERSION` 2). It asks for 3–5 sentences in the given language and script: the definitely avoided items with their Japanese words, the unclear items separately and hedged, and a tip for the context (no chef card for packaged products); only the listed ingredients; never any word about the food being safe, suitable, fine, okay, allowed or edible (not even negated); “could not be fully checked” for amber; no Japanese except the words given; no numbers with units, links or brands; JSON only: `{"why": "..."}`.
+`SYSTEM_PROMPT` in `lib/llm/explain.js` is the source of truth (`PROMPT_VERSION` 3). It asks Gemini only to fill fields, in the given language and script, following this schema (`responseSchema()` in `compose.js`; `key` is an enum of the red keys):
+
+```json
+{ "red": [ { "key": "r1", "name": "Alcohol", "why": "A strict Jain diet avoids all alcohol" } ],
+  "unclear": { "names": "Flavouring, enzyme and seasoning", "mayContain": "fish, meat or other animal products" },
+  "tip": "On other packs, choose ingredient lists that name a plant source" }
+```
+
+`name` 1–4 words; `why` one plain sentence; `mayContain` a noun phrase only (no verb, no “may”, no certainty words); `tip` one sentence for the context; never Japanese or romaji; never safe/suitable/fine/okay/allowed/can eat; no numbers with units, links or brands.
+
+**Server checks before composing** (`composeExplanation()`; failure → template, `fallbackReason: "rejected_<reason>"`): valid JSON of this shape (`not_json`, `bad_shape`); every red key exactly once, nothing else (`missing_red`, `unexpected_red`); every field a non-empty string (`empty_field`), at most 160 characters (`field_too_long`), one sentence (`field_not_one_sentence`), no Japanese (`field_has_japanese`).
 
 ## 11.4 Validation (llm/guard.js)
 
-The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) if ANY of these is true:
+The guard stays as the **final safety check on the composed text**. It is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) if ANY of these is true:
 
 - Not JSON (a ```json fence is tolerated), no `why` string, or empty after trimming.
-- Longer than 700 characters, or more than 6 sentences.
+- Longer than 900 characters, or more than 7 sentences.
 - It contains a banned phrase in any of the three languages — for **every** verdict. English phrases match whole words (so “look for” is fine), except **safe**, which matches anywhere (“unsafe” is rejected too).
 - A digit followed by %, or a link.
 - Japanese first: every Japanese word (hiragana, katakana, kanji, ー, 々) that is one of the red items' given words, in any spelling the engine's `normalizeAlias()` treats as the same (エビ = えび, half-width = full-width), is ignored. Japanese punctuation (・、。「」（）) separates words and is not a letter. Any other Japanese word → `unexpected_japanese` (it would make an unclear item look as if it were printed on the label).
@@ -842,7 +853,7 @@ The reply is thrown away (template kept, `fallbackReason: "rejected_<reason>"`) 
 - English, with flagged items: no key word (4+ letters) of any flagged meaning appears.
 - Outside production, a rejected answer is logged with its text (`op: "llm_rejected"`, `answer`) to tune the prompt and guard; production logs never hold it.
 - Unclear items present but no hedge word (en: may, might, could, possibly, unclear, not stated …; hi: सकता/सकती/सकते, शायद, स्पष्ट नहीं …; gu: શકે, કદાચ, સ્પષ્ટ નથી …) → `unclear_not_hedged`.
-- English: a sentence that names an unclear item and says definitely / certainly / surely / clearly → `unclear_stated_as_definite`.
+- English: a sentence that names an unclear item and says definitely / certainly / surely / for sure / without doubt → `unclear_stated_as_definite`. Generic words from the rulebook notes (source, stated, plant, animal …) are not item names, and “clearly” is not a certainty word, so a tip like “choose products that clearly state a plant source” passes (it was a false positive in prompt v2).
 - Packaged product (every label scan) and the reply mentions the chef card, a restaurant or kitchen staff (en/hi/gu) → `chef_card_for_product`.
 
 | Language | Banned phrases (extend in guard.js) |
