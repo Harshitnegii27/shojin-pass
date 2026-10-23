@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Camera, Check, ClipboardType, ImageUp, Loader2, MessageSquareText, Plus, RotateCcw, Sparkles, Trash2, Users, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { MAX_MEMBERS, useDiet, type Member } from "@/lib/ui/diet-context";
 import { useShojin } from "@/lib/ui/shojin-context";
 import { DIET_ORDER, DIET_PROFILES, LANGS, type Diet, type Lang, type Verdict } from "@/lib/ui/diets";
@@ -103,7 +103,8 @@ export default function Scanner() {
   const [byDiet, setByDiet] = useState<Partial<Record<Diet, DietResult>>>({});
   const [showAll, setShowAll] = useState(false);
   const [sent, setSent] = useState<Record<string, Feedback>>({}); // scanId -> kind sent
-  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   const run = useRef(0); // ignores answers from an older scan
 
   const editing = family.find((m) => m.id === editingId) ?? family[0];
@@ -141,6 +142,15 @@ export default function Scanner() {
     const src: Source = { kind: "text", text: t };
     setSource(src);
     await scanDiets(src, uniqueDiets(family), l, {});
+  }
+
+  // Camera or gallery. Cleared so the same file can be picked again.
+  function pickPhoto(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    if (image) URL.revokeObjectURL(image.url);
+    setImage({ file: f, url: URL.createObjectURL(f) });
   }
 
   // Photos: Person 1's diet only (each diet is another OCR call); "Check for everyone" does the rest.
@@ -449,8 +459,9 @@ export default function Scanner() {
 
           {mode === "upload" && (
             <div>
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" capture="environment" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) { if (image) URL.revokeObjectURL(image.url); setImage({ file: f, url: URL.createObjectURL(f) }); } }} />
+              {/* Two inputs: with `capture` phones open the camera only; without it they offer the gallery. */}
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={pickPhoto} />
+              <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={pickPhoto} />
               {image ? (
                 <div className="relative overflow-hidden rounded-xl border border-washi-300">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -458,12 +469,18 @@ export default function Scanner() {
                   <button onClick={() => { URL.revokeObjectURL(image.url); setImage(null); }} className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 text-sumi" aria-label="Remove photo"><X size={14} /></button>
                 </div>
               ) : (
-                <button onClick={() => fileRef.current?.click()}
-                  className="flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-washi-300 bg-white px-4 py-7 text-sumi-500 transition hover:border-shu hover:text-shu sm:py-10">
-                  <ImageUp size={26} />
-                  <span className="text-sm font-medium">Take or upload a photo</span>
-                  <span className="text-xs text-sumi-400">of the ingredient list (原材料名)</span>
-                </button>
+                <div className="rounded-xl border-2 border-dashed border-washi-300 bg-white p-3 sm:p-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {([[cameraRef, "Take photo", Camera], [galleryRef, "Choose from gallery", ImageUp]] as const).map(([ref, label, Icon]) => (
+                      <button key={label} type="button" onClick={() => ref.current?.click()}
+                        className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-washi-300 px-2 py-5 text-sumi-500 transition hover:border-shu hover:text-shu active:scale-[.97] sm:py-7">
+                        <Icon size={24} />
+                        <span className="text-sm font-medium">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-center text-xs text-sumi-400">of the ingredient list (原材料名)</p>
+                </div>
               )}
               <button disabled={!image || loading} onClick={scanImage} className="btn-primary mt-3 w-full disabled:opacity-50">
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <Camera size={16} />} Check this label
