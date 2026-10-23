@@ -1,10 +1,13 @@
 // POST /api/scan — label photo -> verdict (spec 13.4).
 // multipart/form-data: image (required), preset, options (repeatable), lang.
 // A session is optional, as for text scans: without one (or if Supabase is down) the verdict is
-// still returned, just not saved. OCR problems come back as `retake` with status 200.
+// still returned, just not saved. OCR problems come back as `retake` with status 200, and so does
+// "busy" when too many photo scans arrive at once for the Azure free tier. Rate limit: 429.
 
 import { getUser } from '@/lib/auth/getUser';
 import { ok, fail, handleError } from '@/lib/http/respond';
+import { limitRequest } from '@/lib/http/limitRequest';
+import { reserveOcrScan } from '@/lib/http/rateLimit';
 import { MAX_IMAGE_BYTES } from '@/lib/image/prepareImage';
 import { ScanFieldsSchema } from '@/lib/validation/schemas';
 import { runScan } from '@/lib/scan/scanService';
@@ -15,6 +18,11 @@ const FORM_OVERHEAD = 64 * 1024;
 
 export async function POST(req) {
   try {
+    // Before the photo is read, so a flood never costs OCR quota or memory.
+    const user = await getUser();
+    const limited = await limitRequest('scan', req, user);
+    if (limited) return limited;
+
     if (!(req.headers.get('content-type') || '').includes('multipart/form-data')) {
       return fail('INVALID_REQUEST', { detail: 'Send the photo as multipart/form-data with an "image" field.' });
     }
@@ -39,8 +47,7 @@ export async function POST(req) {
     if (!fields.success) return fail('INVALID_REQUEST', { detail: 'Expected preset?, options?, lang?.' });
 
     const buffer = Buffer.from(await image.arrayBuffer());
-    const user = await getUser();
-    const result = await runScan({ input: { kind: 'photo', buffer }, user, ...fields.data });
+    const result = await runScan({ input: { kind: 'photo', buffer }, user, ...fields.data }, { reserveOcr: () => reserveOcrScan() });
     return ok(result, { rulebookVersion: result.rulebookVersion });
   } catch (err) {
     return handleError(err);

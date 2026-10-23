@@ -4,6 +4,7 @@
 
 import { getUser } from '@/lib/auth/getUser';
 import { ok, fail, handleError } from '@/lib/http/respond';
+import { limitRequest } from '@/lib/http/limitRequest';
 import { readOptionalJson } from '@/lib/http/readJson';
 import { FeedbackSchema, ScanIdSchema } from '@/lib/validation/schemas';
 import { recordFeedback } from '@/lib/scan/scanActions';
@@ -14,6 +15,8 @@ export async function POST(req, { params }) {
   try {
     const user = await getUser();
     if (!user) return fail('UNAUTHENTICATED');
+    const limited = await limitRequest('feedback', req, user);
+    if (limited) return limited;
     const { id } = await params;
     if (!ScanIdSchema.safeParse(id).success) return fail('NOT_FOUND');
     const body = FeedbackSchema.safeParse(await readOptionalJson(req));

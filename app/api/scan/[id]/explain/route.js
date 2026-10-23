@@ -4,6 +4,7 @@
 
 import { getUser } from '@/lib/auth/getUser';
 import { ok, fail, handleError } from '@/lib/http/respond';
+import { limitRequest } from '@/lib/http/limitRequest';
 import { readOptionalJson } from '@/lib/http/readJson';
 import { ExplainBodySchema, ScanIdSchema } from '@/lib/validation/schemas';
 import { explainOwnScan } from '@/lib/scan/scanActions';
@@ -15,6 +16,8 @@ export async function POST(req, { params }) {
   try {
     const user = await getUser();
     if (!user) return fail('UNAUTHENTICATED');
+    const limited = await limitRequest('explain', req, user);
+    if (limited) return limited;
     const { id } = await params;
     if (!ScanIdSchema.safeParse(id).success) return fail('NOT_FOUND');
     const body = ExplainBodySchema.safeParse(await readOptionalJson(req));
