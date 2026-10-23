@@ -230,7 +230,7 @@ export default function Scanner() {
   useEffect(() => {
     if (!viewDiet || !viewData?.scanId) return;
     const r = byDiet[viewDiet];
-    if (!r || r.why?.lang === lang) return;
+    if (!r || r.why?.lang === lang || menuLine(viewData, lang)) return; // no list: the line says it all
     const wanted = viewData.verdict === "red" || viewData.verdict === "amber" || r.lang !== lang;
     if (!wanted) return;
     let live = true;
@@ -334,8 +334,13 @@ export default function Scanner() {
         {/* 3. Why — the person's verdict line and the server's "why", then the flagged ingredients */}
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-washi-300 sm:p-5">
           {!single && <p className="text-sm font-semibold text-ai-600">{view.m.name || "Person"} · {lineFor(view.m.diet, view.r)}</p>}
-          <p className="text-base leading-relaxed text-sumi sm:text-[17px]">{whyFor(view.r) ?? "Please try again in a moment."}</p>
-          {explainUnavailable && <p className="mt-1 text-xs text-sumi-400">Explain is unavailable right now.</p>}
+          {/* No ingredient list: the banner line already says what to do, so no second "why". */}
+          {!menuLine(view.r.data, lang) && (
+            <>
+              <p className="text-base leading-relaxed text-sumi sm:text-[17px]">{whyFor(view.r) ?? "Please try again in a moment."}</p>
+              {explainUnavailable && <p className="mt-1 text-xs text-sumi-400">Explain is unavailable right now.</p>}
+            </>
+          )}
 
           {shown.length > 0 && (
             <ul className="mt-3 space-y-2">

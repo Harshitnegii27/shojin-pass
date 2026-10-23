@@ -21,9 +21,12 @@ describe('menu (no ingredient list)', () => {
     expect(noIngredientList(r)).toBe(true);
   });
 
-  it('shows one fixed menu line in en/hi/gu', () => {
-    expect(menuLine(r, 'en')).toBe('This looks like a menu, not an ingredient label');
-    for (const l of ['en', 'hi', 'gu']) expect(menuLine(r, l)).toBe(MENU_LINE[l]);
+  it('shows one fixed, neutral line in en/hi/gu (restaurant or pack, no guess which)', () => {
+    expect(menuLine(r, 'en')).toBe('No ingredient list found. At a restaurant? Show the chef card. On a pack? Scan the back.');
+    for (const l of ['en', 'hi', 'gu']) {
+      expect(menuLine(r, l)).toBe(MENU_LINE[l]);
+      expect(MENU_LINE[l]).not.toMatch(/looks like|safe|can eat/i);
+    }
   });
 
   it('lists only rulebook matches, never the unknown lines', () => {
