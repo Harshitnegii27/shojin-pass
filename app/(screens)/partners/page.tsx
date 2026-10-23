@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Building2, Plane, Store, Landmark, Megaphone, Ticket } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import CertifyForm from "@/components/partners/CertifyForm";
+import InsightsPanel from "@/components/partners/InsightsPanel";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = { title: "For partners", description: "Earn the Shojin Pass mark and welcome high-value Indian guests — without discounts." };
@@ -31,6 +32,10 @@ export default function PartnersPage() {
             </Reveal>
           ))}
         </div></div>
+      </section>
+
+      <section className="pb-20" id="insights">
+        <div className="container"><InsightsPanel /></div>
       </section>
 
       <section className="bg-washi-200/50 py-20" id="certify">

@@ -5,6 +5,7 @@ import { ArrowRight, Check, ScanLine, Star, Utensils } from "lucide-react";
 import { useRef } from "react";
 import Phone from "./Phone";
 import { useIntro } from "@/lib/ui/intro-context";
+import { SAMPLE_COUNTS } from "@/lib/ui/stage5";
 import HeadlineRotator from "./home/HeadlineRotator";
 import SakuraCanopy from "./decor/SakuraCanopy";
 import SakuraPetals from "./decor/SakuraPetals";
@@ -45,7 +46,7 @@ function HeroInner() {
         {/* Copy */}
         <motion.div style={{ y: copyY, opacity: copyOpacity }}>
           <motion.p {...fade(0)} className="chip">
-            <span className="h-1.5 w-1.5 rounded-full bg-shu" /> Kyoto pilot · 30 venues · 5 Shojin Routes
+            <span className="h-1.5 w-1.5 rounded-full bg-shu" /> Kyoto pilot demo · {SAMPLE_COUNTS.venues} sample venues · {SAMPLE_COUNTS.routes} sample Shojin Routes
           </motion.p>
 
           <HeadlineRotator className="h-display mt-5 text-[38px] leading-[1.06] sm:text-6xl lg:text-7xl" />
@@ -105,7 +106,7 @@ function HeroInner() {
               <p><b className="font-jp text-sumi">玉ねぎ</b> = onion. <b className="font-jp text-sumi">人参</b> = carrot, a root vegetable.</p>
               <p>Both avoided in strict Jain diets.</p>
             </div>
-            <p className="mt-4 text-[11px] text-sumi-400">Label read 97% clearly · Tap to see similar products marked ✓</p>
+            <p className="mt-4 text-[11px] text-sumi-400">Illustration · Tap to see similar products marked ✓</p>
           </Phone>
           </motion.div>
 

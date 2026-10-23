@@ -1,0 +1,47 @@
+{
+  "_doc": "SAMPLE venues for the demo. Every name is made up and none of them is certified: every entry has sample: true, certification: \"sample\" and certifiedAt: null. Use real names only for venues the team has verified (spec 14.6). map.x / map.y place the pin on the drawn city map (0-100).",
+  "venues": [
+    {
+      "id": "demo-arashiyama-temple-kitchen", "nameEn": "Demo Shojin Kitchen (sample)", "nameJa": "デモ精進キッチン",
+      "type": "Temple", "city": "Kyoto", "area": "Arashiyama", "lat": 35.0153, "lng": 135.6735, "map": { "x": 14, "y": 48 },
+      "priceLevel": "¥¥¥", "supports": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible", "jain_strict"],
+      "servesBeforeSunset": true, "note": "Sample entry: full shōjin ryōri course; early dinner slots",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    },
+    {
+      "id": "demo-kelp-tofu-house", "nameEn": "Demo Kelp Tofu House (sample)", "nameJa": "デモ湯豆腐",
+      "type": "Restaurant", "city": "Kyoto", "area": "Arashiyama", "lat": 35.0121, "lng": 135.6810, "map": { "x": 22, "y": 58 },
+      "priceLevel": "¥¥", "supports": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible"],
+      "servesBeforeSunset": true, "note": "Sample entry: kombu-only broth",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    },
+    {
+      "id": "demo-higashiyama-veg-kaiseki", "nameEn": "Demo Veg Kaiseki (sample)", "nameJa": "デモ菜食懐石",
+      "type": "Restaurant", "city": "Kyoto", "area": "Higashiyama", "lat": 34.9986, "lng": 135.7806, "map": { "x": 72, "y": 54 },
+      "priceLevel": "¥¥", "supports": ["vegetarian_egg", "vegetarian", "no_onion_garlic"],
+      "servesBeforeSunset": false, "note": "Sample entry: dinner from 18:00 only",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    },
+    {
+      "id": "demo-station-konbini", "nameEn": "Demo Veg-OK Konbini (sample)", "nameJa": "デモコンビニ",
+      "type": "Konbini", "city": "Kyoto", "area": "Kyoto Station", "lat": 34.9858, "lng": 135.7588, "map": { "x": 52, "y": 78 },
+      "priceLevel": "¥", "supports": ["vegetarian_egg", "vegetarian"],
+      "servesBeforeSunset": true, "note": "Sample entry: shelf tags on checked products",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    },
+    {
+      "id": "demo-koyasan-shukubo", "nameEn": "Demo Temple Lodging (sample)", "nameJa": "デモ宿坊",
+      "type": "Temple", "city": "Koyasan", "area": "Koyasan west", "lat": 34.2127, "lng": 135.5768, "map": { "x": 22, "y": 50 },
+      "priceLevel": "¥¥¥", "supports": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible", "jain_strict"],
+      "servesBeforeSunset": true, "note": "Sample entry: early dinner on request",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    },
+    {
+      "id": "demo-okunoin-tea-house", "nameEn": "Demo Tea House (sample)", "nameJa": "デモ茶屋",
+      "type": "Restaurant", "city": "Koyasan", "area": "Okunoin", "lat": 34.2196, "lng": 135.6005, "map": { "x": 80, "y": 38 },
+      "priceLevel": "¥", "supports": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible"],
+      "servesBeforeSunset": true, "note": "Sample entry: goma-dōfu and tea",
+      "sample": true, "certification": "sample", "certifiedAt": null
+    }
+  ]
+}

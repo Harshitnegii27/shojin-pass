@@ -8,7 +8,7 @@ export default function VenuesPage() {
   return (
     <>
       <PageHeader eyebrow="Partner venues" jp="認定" title={<>Look for the mark. <em className="text-shu">Eat without asking twice.</em></>}
-        sub="Every venue with the Shojin Pass mark has passed a 10-point checklist: kelp dashi instead of bonito, separate utensils, ingredient lists, and staff trained on the chef card." />
+        sub="Every venue with the Shojin Pass mark will have passed a 10-point checklist: kelp dashi instead of bonito, separate utensils, ingredient lists, and staff trained on the chef card. The venues below are samples, not real certifications." />
       <section className="pb-24"><div className="container"><VenueExplorer /></div></section>
     </>
   );

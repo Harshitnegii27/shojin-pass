@@ -13,7 +13,7 @@ const TEAM = [
 const METRICS = [
   ["Spend per visitor", "Above the ¥249,807 national baseline — with no discounts."],
   ["Family trips", "Share of trips with 3+ travellers, and business trips extended with family."],
-  ["Scanner accuracy", "95%+ correct verdicts on held-out real labels, and zero confident false “safe”."],
+  ["Scanner accuracy", "Target: 95%+ correct verdicts on held-out real labels, and zero confident false “safe”. Not measured yet."],
   ["Venue network", "Certified venues and Indian guests per venue. Pilot target: 30 in Kyoto."],
 ];
 

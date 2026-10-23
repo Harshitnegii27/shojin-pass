@@ -24,6 +24,7 @@ export default function BookingForm({ title, price }: { title: string; price: nu
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-sumi-400">From</p>
         <p className="font-serif text-4xl text-ai-600">{inr(price)}<span className="text-base text-sumi-400"> / person</span></p>
+        <p className="text-xs text-sumi-400">Sample price for this sample route.</p>
       </div>
       <label className="block text-sm font-medium text-ai-600">Date
         <input required type="date" className="mt-1.5 w-full rounded-xl border border-washi-300 bg-white px-4 py-2.5 font-normal text-sumi focus:border-ai-400 focus:outline-none" />
@@ -46,7 +47,7 @@ export default function BookingForm({ title, price }: { title: string; price: nu
       <div className="flex justify-between border-t border-washi-200 pt-4 text-sm"><span className="text-sumi-500">Estimated total</span><span className="font-semibold text-ai-600">{inr(price * people)}</span></div>
       <button className="btn-primary w-full">Request this route</button>
       <p className="text-center text-xs text-sumi-400">No payment now. Menus are confirmed with each venue first.</p>
-      {/* stage 5+: bookings are a pilot endpoint (spec 13.3); nothing is sent yet. */}
+      {/* Bookings are a pilot endpoint (spec 13.3); nothing is sent yet. */}
       <p className="text-center text-xs text-amber">Demo: this request is not sent anywhere yet.</p>
     </form>
   );

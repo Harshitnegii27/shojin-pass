@@ -8,6 +8,7 @@ import { useShojin } from "@/lib/ui/shojin-context";
 import { DIET_ORDER, DIET_PROFILES, LANGS, type Diet, type Lang, type Verdict } from "@/lib/ui/diets";
 import { shrinkPhoto } from "@/lib/client/shrinkPhoto";
 import { verdictLine } from "@/lib/text/templates";
+import { familySummary } from "@/lib/ui/familySummary";
 
 // Every verdict, verdict line and "why" comes from the server (our engine via shojinClient).
 // This screen only shows them; it never judges an ingredient itself.
@@ -49,12 +50,6 @@ const PILL: Record<Verdict, string> = { green: "bg-moss-50 text-moss", red: "bg-
 const PILL_LABEL: Record<Verdict, string> = { green: "Not avoided", red: "Avoid", amber: "Ask", retake: "Unclear" };
 const AVATAR = ["bg-shu", "bg-ai-600", "bg-moss", "bg-amber", "bg-ai-400", "bg-shu-600", "bg-moss-600", "bg-sumi-500"];
 
-// Family summary lines (fixed text; Hindi and Gujarati need a native speaker's check).
-const SUMMARY = {
-  allGreen: { en: "No avoided ingredients found for anyone", hi: "किसी के लिए कोई वर्जित सामग्री नहीं मिली", gu: "કોઈના માટે કોઈ વર્જિત ઘટક મળ્યો નથી" },
-  allRed: { en: "Not suitable for anyone", hi: "किसी के लिए उपयुक्त नहीं", gu: "કોઈના માટે યોગ્ય નથી" },
-  some: { en: "No avoided ingredients found for {g} of {n}", hi: "{n} में से {g} के लिए कोई वर्जित सामग्री नहीं मिली", gu: "{n} માંથી {g} માટે કોઈ વર્જિત ઘટક મળ્યો નથી" },
-};
 const GROUPS: { key: Verdict | "error"; en: string; dot: string; cls: string }[] = [
   { key: "green", en: "No avoided ingredients found", dot: "✓", cls: "text-moss" },
   { key: "red", en: "Not suitable", dot: "✕", cls: "text-shu" },
@@ -201,7 +196,6 @@ export default function Scanner() {
   const unchecked = family.filter((m) => !byDiet[m.diet]);
   const view = rows.find((x) => x.m.id === viewId) ?? rows[0];
   const single = family.length === 1;
-  const greens = rows.filter((x) => colourOf(x.r) === "green").length;
   const overall = rows.reduce<Verdict | "error">((w, x) => (RANK[colourOf(x.r)] < RANK[w] ? colourOf(x.r) : w), "green");
 
   // The fixed verdict line in the chosen language. Re-worded with the same reviewed template when the
@@ -212,9 +206,7 @@ export default function Scanner() {
 
   const headline = !view ? "" : single || rows.length === 1
     ? lineFor(view.m.diet, view.r)
-    : greens === rows.length ? SUMMARY.allGreen[lang]
-      : rows.every((x) => colourOf(x.r) === "red") ? SUMMARY.allRed[lang]
-        : SUMMARY.some[lang].replace("{g}", String(greens)).replace("{n}", String(rows.length));
+    : familySummary(rows.map((x) => ({ verdict: colourOf(x.r), reasons: x.r.data?.reasons })), lang);
   const headColour: Verdict | "error" = single || rows.length === 1 ? (view ? colourOf(view.r) : "green") : overall;
   const H = STATUS[headColour];
 

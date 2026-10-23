@@ -16,8 +16,9 @@ type Ctx = {
   removeMember: (id: string) => void;
   lang: Lang;
   setLang: (l: Lang) => void;
-  /** Person 1's options (avoid_shared_line …), kept from the saved diet; not edited on these screens. */
+  /** Person 1's options (avoid_shared_line, no_food_after_sunset …), kept with the saved diet. */
   options: string[];
+  setOptions: (o: string[]) => void;
 };
 
 export const MAX_MEMBERS = 8;
@@ -112,6 +113,7 @@ export function DietProvider({ children }: { children: ReactNode }) {
     lang,
     setLang,
     options,
+    setOptions: (o) => setOptions([...new Set(o)].sort()),
   };
 
   return <DietCtx.Provider value={value}>{children}</DietCtx.Provider>;

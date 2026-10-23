@@ -1,0 +1,34 @@
+{
+  "_doc": "SAMPLE Shojin Routes for the demo (spec 14.6). Every route has lat/lng (for the sunset rule) and every meal stop has isMeal: true. venueId points to data/venues.json (sample venues only). Prices are sample prices.",
+  "routes": [
+    {
+      "slug": "kyoto-zen-temple-day", "title": "Kyoto Zen Temple Day", "titleJa": "京都・禅寺の一日", "city": "Kyoto",
+      "lat": 35.0153, "lng": 135.6735, "days": 1, "samplePriceINR": 14900, "season": ["All year"], "color": "bg-shu",
+      "blurb": "Zen gardens in Arashiyama, a shōjin ryōri lunch, a tea ceremony and an evening meal at a sample partner venue.",
+      "highlights": ["Temple-cuisine lunch", "Tea ceremony", "Partner dinner"],
+      "dietPresets": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible", "jain_strict"],
+      "stops": [
+        { "day": 1, "start": "08:30", "title": "Zen garden visit", "place": "Arashiyama temple area", "isMeal": false },
+        { "day": 1, "start": "10:30", "title": "Bamboo grove walk", "place": "Sagano", "isMeal": false },
+        { "day": 1, "start": "12:00", "title": "Temple cuisine lunch", "place": "Shōjin ryōri course", "note": "Jain menu pre-arranged", "isMeal": true, "venueId": "demo-arashiyama-temple-kitchen" },
+        { "day": 1, "start": "15:00", "title": "Tea ceremony", "place": "Matcha and wagashi", "note": "Eggless sweets checked", "isMeal": true, "venueId": "demo-kelp-tofu-house" },
+        { "day": 1, "start": "19:00", "title": "Partner dinner", "place": "Sample partner venue", "isMeal": true, "venueId": "demo-arashiyama-temple-kitchen" }
+      ]
+    },
+    {
+      "slug": "koyasan-temple-stay", "title": "Koyasan Temple Stay", "titleJa": "高野山・宿坊", "city": "Koyasan",
+      "lat": 34.2130, "lng": 135.5853, "days": 2, "samplePriceINR": 38500, "season": ["Apr–Nov"], "color": "bg-ai-600",
+      "blurb": "Sleep in a mountain monastery, join the dawn prayer and eat shōjin ryōri at a sample temple lodging.",
+      "highlights": ["Overnight shukubō", "Morning prayer", "Okunoin night walk"],
+      "dietPresets": ["vegetarian_egg", "vegetarian", "no_onion_garlic", "jain_flexible"],
+      "stops": [
+        { "day": 1, "start": "14:00", "title": "Check in to temple lodging", "place": "Shukubō, Koyasan", "isMeal": false },
+        { "day": 1, "start": "17:30", "title": "Shōjin ryōri dinner", "place": "Served in your room", "note": "No onion, garlic or dashi", "isMeal": true, "venueId": "demo-koyasan-shukubo" },
+        { "day": 1, "start": "19:30", "title": "Okunoin night walk", "place": "Lantern-lit forest path", "isMeal": false },
+        { "day": 2, "start": "06:00", "title": "Morning prayer & fire ritual", "place": "Main hall", "isMeal": false },
+        { "day": 2, "start": "07:30", "title": "Temple breakfast", "place": "Goma-dōfu, rice, pickles", "isMeal": true, "venueId": "demo-koyasan-shukubo" },
+        { "day": 2, "start": "11:00", "title": "Tea and goma-dōfu", "place": "Okunoin tea house", "isMeal": true, "venueId": "demo-okunoin-tea-house" }
+      ]
+    }
+  ]
+}

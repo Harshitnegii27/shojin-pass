@@ -1,10 +1,15 @@
 "use client";
-import { BadgeCheck, MapPin } from "lucide-react";
+import { FlaskConical, MapPin } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
-import { VENUES, type VenueType } from "@/lib/ui/site-data";
+import { useEffect, useState } from "react";
 import { useDiet } from "@/lib/ui/diet-context";
+import { useShojin } from "@/lib/ui/shojin-context";
 import { DIET_PROFILES } from "@/lib/ui/diets";
+import type { Venue } from "@/lib/ui/stage5";
+
+type VenueType = Venue["type"];
+// Where to search in each city (GET /api/venues: nearest first within the radius).
+const CITY = { Kyoto: { lat: 35.0116, lng: 135.7681, radius: 15000 }, Koyasan: { lat: 34.213, lng: 135.5853, radius: 8000 } } as const;
 
 const TYPES: ("All" | VenueType)[] = ["All", "Temple", "Restaurant", "Ryokan", "Konbini"];
 const TYPE_COLOR: Record<VenueType, string> = { Temple: "bg-shu", Restaurant: "bg-ai-600", Ryokan: "bg-moss", Konbini: "bg-amber" };
@@ -36,16 +41,27 @@ function MapArt({ city }: { city: "Kyoto" | "Koyasan" }) {
 }
 
 export default function VenueExplorer() {
+  const { client } = useShojin();
   const { diet } = useDiet();
   const [city, setCity] = useState<"Kyoto" | "Koyasan">("Kyoto");
   const [type, setType] = useState<(typeof TYPES)[number]>("All");
   const [onlyMine, setOnlyMine] = useState(true);
   const [active, setActive] = useState<string | null>(null);
+  const [venues, setVenues] = useState<Venue[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  const list = useMemo(
-    () => VENUES.filter((v) => v.city === city && (type === "All" || v.type === type) && (!onlyMine || v.diets.includes(diet))),
-    [city, type, onlyMine, diet],
-  );
+  // The diet filter is done by the server (preset); the type filter only narrows what came back.
+  useEffect(() => {
+    let live = true;
+    client.venues({ ...CITY[city], preset: onlyMine ? diet : undefined }).then((r) => {
+      if (!live) return;
+      setFailed(!r.ok);
+      setVenues(r.ok ? (r.data as { venues: Venue[] }).venues : []);
+    });
+    return () => { live = false; };
+  }, [client, city, onlyMine, diet]);
+
+  const list = (venues ?? []).filter((v) => v.city === city && (type === "All" || v.type === type));
 
   return (
     <div>
@@ -74,14 +90,14 @@ export default function VenueExplorer() {
           </AnimatePresence>
           <AnimatePresence>
           {list.map((v, i) => (
-            <motion.button key={city + v.id} onClick={() => setActive(v.id)} style={{ left: `${v.x}%`, top: `${v.y}%` }}
+            <motion.button key={city + v.id} onClick={() => setActive(v.id)} style={{ left: `${v.map.x}%`, top: `${v.map.y}%` }}
               initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: active === v.id ? 1.25 : 1 }} exit={{ scale: 0, opacity: 0 }}
               whileHover={{ scale: active === v.id ? 1.3 : 1.15 }}
               transition={{ type: "spring", stiffness: 300, damping: 15, delay: active ? 0 : i * 0.07 }}
-              className={`absolute -ml-[18px] -mt-9 ${active === v.id ? "z-20" : "z-10"}`} aria-label={v.name}>
+              className={`absolute -ml-[18px] -mt-9 ${active === v.id ? "z-20" : "z-10"}`} aria-label={`${v.nameEn} (sample)`}>
               {active === v.id && <span className={`ping-soft absolute left-1/2 top-full -ml-2 -mt-2 h-4 w-4 rounded-full ${TYPE_COLOR[v.type]}`} aria-hidden />}
               <span className={`relative grid h-9 w-9 place-items-center rounded-full rounded-br-none rotate-45 border-2 border-white shadow-float ${TYPE_COLOR[v.type]}`}>
-                <span className="-rotate-45 font-jp text-xs font-bold text-white">{v.jp[0]}</span>
+                <span className="-rotate-45 font-jp text-xs font-bold text-white">{v.nameJa[0]}</span>
               </span>
             </motion.button>
           ))}
@@ -92,7 +108,9 @@ export default function VenueExplorer() {
         </div>
 
         <ul className="space-y-3 lg:max-h-[560px] lg:overflow-y-auto lg:pr-1">
-          {list.length === 0 && <li className="card p-6 text-sm text-sumi-500">No certified venues here for this profile yet. Try another area or turn off the profile filter.</li>}
+          {venues === null && <li className="card p-6 text-sm text-sumi-500">Loading sample venues…</li>}
+          {failed && <li className="card p-6 text-sm text-sumi-500">Couldn’t load venues right now. Please try again.</li>}
+          {venues !== null && !failed && list.length === 0 && <li className="card p-6 text-sm text-sumi-500">No sample venues here for this profile. Try another area or turn off the profile filter.</li>}
           <AnimatePresence mode="popLayout">
           {list.map((v, i) => (
             <motion.li key={v.id} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -100,14 +118,14 @@ export default function VenueExplorer() {
               <button onClick={() => setActive(v.id)} className={`card w-full p-5 text-left transition ${active === v.id ? "ring-2 ring-shu" : "hover:border-ai-400/40"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-serif text-xl text-ai-600">{v.name} <span className="font-jp text-sm text-sumi-400">{v.jp}</span></p>
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-sumi-400"><MapPin size={12} /> {v.area} · {v.type} · {v.price}</p>
+                    <p className="font-serif text-xl text-ai-600">{v.nameEn} <span className="font-jp text-sm text-sumi-400">{v.nameJa}</span></p>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-sumi-400"><MapPin size={12} /> {v.area} · {v.type} · {v.priceLevel}{v.distanceM != null ? ` · ${(v.distanceM / 1000).toFixed(1)} km from the centre` : ""}</p>
                   </div>
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-moss-50 px-2.5 py-1 text-[11px] font-semibold text-moss"><BadgeCheck size={13} /> Certified</span>
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber"><FlaskConical size={13} /> {v.sampleNote ?? "Sample"}</span>
                 </div>
                 <p className="mt-2 text-sm text-sumi-500">{v.note}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {v.diets.map((d) => <span key={d} className={`rounded-full px-2 py-0.5 text-[11px] ${d === diet ? "bg-ai-600 text-white" : "bg-washi-200 text-sumi-500"}`}>{DIET_PROFILES[d].label}</span>)}
+                  {v.supports.map((d) => <span key={d} className={`rounded-full px-2 py-0.5 text-[11px] ${d === diet ? "bg-ai-600 text-white" : "bg-washi-200 text-sumi-500"}`}>{DIET_PROFILES[d].label}</span>)}
                 </div>
               </button>
             </motion.li>
@@ -115,7 +133,7 @@ export default function VenueExplorer() {
           </AnimatePresence>
         </ul>
       </div>
-      <p className="mt-4 text-xs text-sumi-400">Venue names and certifications shown are illustrative for the Kyoto pilot demo.</p>
+      <p className="mt-4 text-xs font-semibold text-amber">Every venue shown is a sample with a made-up name — not a real certification.</p>
     </div>
   );
 }

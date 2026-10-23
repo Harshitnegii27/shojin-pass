@@ -55,5 +55,5 @@ export const FAQ = [
   { q: "Does it work for strict Jain diets?", a: "Yes. You choose your profile — vegetarian, eggless, no onion or garlic, or Jain strict/flexible — and every verdict is judged against those rules." },
   { q: "What if my parents don’t use smartphones?", a: "Every profile comes with a printable “Show the Chef” card in polite Japanese, so elders can travel with the same confidence." },
   { q: "Is it free?", a: "Free for travellers. Tourism bodies sponsor routes, venues pay a certification fee, and bookings carry a commission. No discounts anywhere." },
-  { q: "Where does it launch first?", a: "Kyoto: 30 certified venues and 5 Shojin Routes in the first 90 days, with the campaign in Ahmedabad, Mumbai and Bengaluru." },
+  { q: "Where does it launch first?", a: "Kyoto. The pilot target is 30 certified venues and 5 Shojin Routes in the first 90 days, with the campaign in Ahmedabad, Mumbai and Bengaluru. The venues and routes on this site today are samples." },
 ];
