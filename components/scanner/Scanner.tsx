@@ -9,6 +9,7 @@ import { DIET_ORDER, DIET_PROFILES, LANGS, type Diet, type Lang, type Verdict } 
 import { shrinkPhoto } from "@/lib/client/shrinkPhoto";
 import { verdictLine } from "@/lib/text/templates";
 import { familySummary } from "@/lib/ui/familySummary";
+import { MENU_LINE, listedItems, menuLine, noIngredientList } from "@/lib/ui/menuScan";
 
 // Every verdict, verdict line and "why" comes from the server (our engine via shojinClient).
 // This screen only shows them; it never judges an ingredient itself.
@@ -209,13 +210,16 @@ export default function Scanner() {
   const overall = rows.reduce<Verdict | "error">((w, x) => (RANK[colourOf(x.r)] < RANK[w] ? colourOf(x.r) : w), "green");
 
   // The fixed verdict line in the chosen language. Re-worded with the same reviewed template when the
-  // language changes after a photo scan (same verdict, no new OCR call).
+  // language changes after a photo scan (same verdict, no new OCR call). No ingredient list and amber
+  // (e.g. a menu): one fixed "menu" line instead.
   const lineFor = (d: Diet, r: DietResult) =>
     !r.data ? (r.error?.message ?? "Something went wrong. Please try again.")
-      : r.lang === lang ? r.data.verdictLine : verdictLine(r.data.verdict, dietLabel(d), lang);
+      : menuLine(r.data, lang) ?? (r.lang === lang ? r.data.verdictLine : verdictLine(r.data.verdict, dietLabel(d), lang));
 
+  const allMenu = rows.length > 0 && rows.every((x) => menuLine(x.r.data, lang));
   const headline = !view ? "" : single || rows.length === 1
     ? lineFor(view.m.diet, view.r)
+    : allMenu ? MENU_LINE[lang]
     : familySummary(rows.map((x) => ({ verdict: colourOf(x.r), reasons: x.r.data?.reasons })), lang);
   const headColour: Verdict | "error" = single || rows.length === 1 ? (view ? colourOf(view.r) : "green") : overall;
   const H = STATUS[headColour];
@@ -255,14 +259,29 @@ export default function Scanner() {
     </div>
   );
 
-  const viewItems: Item[] = viewData
-    ? [...viewData.items, ...viewData.unknown.map((u) => ({ ...u, colour: "amber" as Verdict, meaning: { en: "Not in our rulebook yet" } }))]
+  // No ingredient list: only rulebook matches, not every OCR line as "Not in our rulebook yet".
+  const listed = viewData ? listedItems(viewData) : null;
+  const viewItems: Item[] = listed
+    ? [...listed.items, ...listed.unknown.map((u) => ({ ...u, colour: "amber" as Verdict, meaning: { en: "Not in our rulebook yet" } }))]
         .sort((a, b) => RANK[a.colour] - RANK[b.colour])
     : [];
   const shown = viewItems.filter((f) => showAll || f.colour !== "green");
   const scanId = viewData?.scanId ?? null;
   // No saved scan (sign-in failed or unavailable, or saving failed): no explanation or feedback.
   const explainUnavailable = !!viewData && (!scanId || status === "failed" || status === "unavailable");
+
+  // No ingredient list (a menu): the chef card is what helps at a restaurant, so it leads.
+  const noList = rows.some((x) => noIngredientList(x.r.data));
+  const actions = (
+    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+      {headColour !== "green" && (
+        <Link href="/chef-card" className={`btn-primary ${noList ? "col-span-2" : ""}`}>
+          <MessageSquareText size={16} /> {noList ? "Show the Chef card" : "Show the Chef"}
+        </Link>
+      )}
+      <button onClick={reset} className={`btn-ghost ${headColour === "green" || noList ? "col-span-2" : ""}`}><RotateCcw size={15} /> Scan another</button>
+    </div>
+  );
 
   const resultView = hasResult && view && (
     <motion.div key={(source?.kind === "text" ? source.text : "photo") + dietKey + lang} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
@@ -362,11 +381,14 @@ export default function Scanner() {
           )}
         </div>
 
-        <div className="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
-          {headColour !== "green" && <Link href="/chef-card" className="btn-primary"><MessageSquareText size={16} /> Show the Chef</Link>}
-          <button onClick={reset} className="btn-ghost"><RotateCcw size={15} /> Scan another</button>
-        </div>
+        {!isMobile && actions}
       </div>
+      {/* Phone: always in reach at the bottom of the sheet, however long the list is. */}
+      {isMobile && (
+        <div className="sticky bottom-0 z-10 border-t border-washi-200 bg-washi-50/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+          {actions}
+        </div>
+      )}
     </motion.div>
   );
 
@@ -530,7 +552,7 @@ export default function Scanner() {
             <motion.div key="scrim" className="fixed inset-0 z-[70] bg-sumi/40 backdrop-blur-[2px] lg:hidden"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={reset} aria-hidden />
             <motion.div key="sheet" role="dialog" aria-label="Scan result" aria-live="polite"
-              className="fixed inset-x-0 bottom-0 z-[71] max-h-[80vh] overflow-y-auto rounded-t-3xl bg-washi-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-20px_50px_-20px_rgba(13,26,44,.4)] lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-[71] max-h-[80vh] overflow-y-auto rounded-t-3xl bg-washi-50 shadow-[0_-20px_50px_-20px_rgba(13,26,44,.4)] lg:hidden"
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 34 }}
               drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }}
               onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) reset(); }}>
