@@ -29,3 +29,37 @@ trusted and every label is amber (by design).
 | `lib/scan/analyze.js` | the whole pure pipeline for one label |
 | `lib/text/templates.js` | fixed verdict lines and "why" sentences in English, Hindi, Gujarati |
 | `tests/` | unit tests, 138 edge cases, property tests over every spelling, generated adversarial labels |
+
+## Frontend (app screens)
+
+Next.js App Router · React 19 · TypeScript for the screens (`.tsx`) next to the JavaScript backend ·
+Tailwind CSS 3 · Framer Motion · lucide-react. Fonts are self-hosted with Fontsource, so the site
+builds and runs without reaching Google Fonts. Built by Team Kakehashi 架け橋.
+
+```
+npm run dev        # http://localhost:3000
+npm run build && npm start
+```
+
+| Route | What it is |
+|---|---|
+| `/` | Landing page: hero, how it works, features, shōjin ryōri insight, FAQ |
+| `/scanner` | Trust Scanner: family members with their diets, samples / photo / pasted text, verdict + reason in English, हिंदी or ગુજરાતી |
+| `/routes` · `/routes/[slug]` | Shojin Routes list and detail with timeline and a (demo) booking form |
+| `/venues` | Partner venues on a stylised Kyoto / Koyasan map, filtered by type and your diet |
+| `/chef-card` | Show the Chef: polite Japanese card for your diet, tap-to-reply answers, printable |
+| `/partners` | For tourism bodies and venues: 10-point checklist self-check (demo form) |
+| `/about` | Story, success metrics, team |
+| `/dev` | Backend test console (not on production) |
+
+The screens live in `app/(screens)/` with their own layout (header, footer, providers); `/dev` stays
+outside it. Every verdict comes from the server through `lib/client/shojinClient.js`: the screens never
+judge an ingredient and never call `fetch` themselves. Photos check Person 1's diet first ("Check for
+everyone" scans the rest); text and samples check everyone at once.
+
+Where to edit things:
+
+- `lib/ui/content.ts`: landing-page copy, stats, FAQ.
+- `lib/ui/site-data.ts`: Shojin Routes, venues (demo data until stage 5), certification checklist.
+- `lib/ui/diets.ts`: the diet pickers; names come from `rulebook/diets.json`.
+- `tailwind.config.ts`: design tokens from the pitch deck: `washi` cream, `ai` indigo, `shu` vermilion, `moss`, `amber`.

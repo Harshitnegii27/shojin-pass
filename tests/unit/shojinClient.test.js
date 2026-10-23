@@ -64,6 +64,134 @@ describe('sign-in', () => {
     const c = createShojinClient({ supabase: null, storage: memoryStorage(), log: log() });
     expect((await c.signIn('t')).ok).toBe(false);
   });
+
+  it('currentSession reports an existing session and never signs in', async () => {
+    const withSession = fakeSupabase({ session: { user: { id: 'u0' } } });
+    expect(await createShojinClient({ supabase: withSession, storage: memoryStorage(), log: log() }).currentSession()).toEqual({ ok: true, userId: 'u0', configured: true });
+    const none = fakeSupabase();
+    expect(await createShojinClient({ supabase: none, storage: memoryStorage(), log: log() }).currentSession()).toEqual({ ok: true, userId: null, configured: true });
+    expect(none.auth.signInAnonymously).not.toHaveBeenCalled();
+    expect(await createShojinClient({ supabase: null, storage: memoryStorage(), log: log() }).currentSession()).toMatchObject({ ok: false, configured: false });
+  });
+
+  it('currentSession: Supabase unreachable gives no session and logs, never throws', async () => {
+    const l = log();
+    const supabase = { auth: { getSession: () => Promise.reject(new TypeError('Failed to fetch')) } };
+    expect(await createShojinClient({ supabase, storage: memoryStorage(), log: l }).currentSession()).toEqual({ ok: false, userId: null, configured: true });
+    expect(l.error).toHaveBeenCalledWith('[shojin]', 'get_session', expect.any(String));
+  });
+});
+
+describe('ensureSession (the app screens sign in once, like /dev)', () => {
+  it('an existing session is reused: no Turnstile token, no second sign-in', async () => {
+    const supabase = fakeSupabase({ session: { user: { id: 'u0' } } });
+    const getToken = vi.fn(async () => 'token');
+    const c = createShojinClient({ supabase, storage: memoryStorage(), log: log() });
+    expect(await c.ensureSession(getToken)).toEqual({ ok: true, userId: 'u0', existing: true });
+    expect(await c.ensureSession(getToken)).toEqual({ ok: true, userId: 'u0', existing: true });
+    expect(getToken).not.toHaveBeenCalled();
+    expect(supabase.auth.signInAnonymously).not.toHaveBeenCalled();
+  });
+
+  it('no session: one Turnstile token, one anonymous sign-in', async () => {
+    const supabase = fakeSupabase();
+    const getToken = vi.fn(async () => 'turnstile-token');
+    const c = createShojinClient({ supabase, storage: memoryStorage(), log: log() });
+    expect(await c.ensureSession(getToken)).toEqual({ ok: true, userId: 'u1', existing: false });
+    expect(getToken).toHaveBeenCalledTimes(1);
+    expect(supabase.auth.signInAnonymously).toHaveBeenCalledWith({ options: { captchaToken: 'turnstile-token' } });
+  });
+
+  it('calls made while signing in share it: only one new user (React runs effects twice in dev)', async () => {
+    const supabase = fakeSupabase();
+    let giveToken;
+    const getToken = vi.fn(() => new Promise((r) => { giveToken = r; }));
+    const c = createShojinClient({ supabase, storage: memoryStorage(), log: log() });
+    const a = c.ensureSession(getToken);
+    const b = c.ensureSession(getToken);
+    expect(b).toBe(a);
+    await vi.waitFor(() => expect(getToken).toHaveBeenCalled());
+    giveToken('t');
+    expect(await a).toMatchObject({ ok: true, userId: 'u1' });
+    expect(getToken).toHaveBeenCalledTimes(1);
+    expect(supabase.auth.signInAnonymously).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['Turnstile fails', fakeSupabase(), async () => { throw new Error('Turnstile error'); }],
+    ['Turnstile gives no token', fakeSupabase(), async () => ''],
+    ['Turnstile not configured', fakeSupabase(), undefined],
+    ['Supabase rejects the sign-in', fakeSupabase({ signIn: async () => ({ data: {}, error: new Error('captcha protection: request disallowed') }) }), async () => 't'],
+    ['Supabase unreachable', { auth: { getSession: () => Promise.reject(new TypeError('Failed to fetch')) } }, async () => 't'],
+  ])('%s: ok false and logged, never throws', async (_, supabase, getToken) => {
+    const l = log();
+    const r = await createShojinClient({ supabase, storage: memoryStorage(), log: l }).ensureSession(getToken);
+    expect(r).toMatchObject({ ok: false, userId: null });
+    expect(l.error).toHaveBeenCalledWith('[shojin]', 'sign_in', expect.any(String));
+  });
+
+  it('Supabase not configured: ok false, and a later call still runs (nothing stuck)', async () => {
+    const c = createShojinClient({ supabase: null, storage: memoryStorage(), log: log() });
+    expect((await c.ensureSession(async () => 't')).ok).toBe(false);
+    expect((await c.ensureSession(async () => 't')).ok).toBe(false);
+  });
+
+  it('after a failed sign-in, the next call tries again', async () => {
+    const supabase = fakeSupabase();
+    const getToken = vi.fn().mockRejectedValueOnce(new Error('Turnstile error')).mockResolvedValueOnce('t');
+    const c = createShojinClient({ supabase, storage: memoryStorage(), log: log() });
+    expect((await c.ensureSession(getToken)).ok).toBe(false);
+    expect((await c.ensureSession(getToken)).ok).toBe(true);
+    expect(supabase.auth.signInAnonymously).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('explain failures are logged clearly', () => {
+  it('a reply that is not JSON (framework error page) is named as such', async () => {
+    const l = log();
+    const fetchFn = vi.fn(() => Promise.resolve({ status: 500, json: async () => { throw new SyntaxError('Unexpected token <'); } }));
+    const r = await createShojinClient({ storage: memoryStorage(), fetchFn, log: l }).explain('s1', 'hi');
+    expect(r).toMatchObject({ ok: false, status: 500 });
+    expect(l.error).toHaveBeenCalledWith('[shojin]', 'explain', 'HTTP 500 (not JSON: server error page, not our API)');
+  });
+
+  it('our own JSON errors are logged by their code', async () => {
+    const l = log();
+    const fetchFn = fakeFetch({ 'POST /api/scan/s1/explain': () => json(400, { error: { code: 'INVALID_REQUEST' } }) });
+    await createShojinClient({ storage: memoryStorage(), fetchFn, log: l }).explain('s1', 'xx');
+    expect(l.error).toHaveBeenCalledWith('[shojin]', 'explain', 'INVALID_REQUEST');
+  });
+});
+
+describe('scans for one family member', () => {
+  const stored = () => memoryStorage({ [DIET_KEY]: JSON.stringify({ preset: 'vegetarian', options: [], lang: 'en' }) });
+
+  it('a given diet is sent instead of the local one, and the local one is not changed', async () => {
+    const storage = stored();
+    const fetchFn = fakeFetch({ 'POST /api/scan/text': () => json(200, { data: { verdict: 'amber' } }) });
+    const c = createShojinClient({ storage, fetchFn, log: log() });
+    await c.scanText('原材料名：みりん', { diet: { preset: 'jain_strict', options: ['avoid_shared_line'], lang: 'gu' } });
+    expect(JSON.parse(fetchFn.mock.calls[0][1].body)).toEqual({ text: '原材料名：みりん', preset: 'jain_strict', options: ['avoid_shared_line'], lang: 'gu' });
+    expect(JSON.parse(storage.dump()[DIET_KEY]).preset).toBe('vegetarian');
+  });
+
+  it('photo scans send the given diet as form fields', async () => {
+    const fetchFn = vi.fn(() => json(200, { data: { verdict: 'retake' } }));
+    const c = createShojinClient({ storage: stored(), fetchFn, log: log() });
+    await c.scanPhoto(new Blob(['x'], { type: 'image/jpeg' }), 'l.jpg', { diet: { preset: 'jain_flexible', options: ['avoid_alcohol'] } });
+    const form = fetchFn.mock.calls[0][1].body;
+    expect(form.get('preset')).toBe('jain_flexible');
+    expect(form.getAll('options')).toEqual(['avoid_alcohol']);
+    expect(form.get('lang')).toBeNull();
+  });
+
+  it('text scan with no network returns a NETWORK error, never a verdict', async () => {
+    const l = log();
+    const r = await createShojinClient({ storage: stored(), fetchFn: fakeFetch({}), log: l }).scanText('x');
+    expect(r).toEqual({ status: 0, error: { code: 'NETWORK', message: 'Check your connection and try again.' } });
+    expect(r.data).toBeUndefined();
+    expect(l.error).toHaveBeenCalledWith('[shojin]', 'scan_text', expect.any(String));
+  });
 });
 
 describe('diet in localStorage', () => {

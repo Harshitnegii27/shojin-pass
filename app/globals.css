@@ -1,0 +1,58 @@
+:root { --font-serif: "Fraunces Variable"; --font-sans: "Inter Variable"; --font-jp: "Noto Serif JP"; }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-washi text-sumi font-sans antialiased; }
+  ::selection { @apply bg-shu/20; }
+}
+
+@layer components {
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-shu; }
+  .h-display { @apply font-serif text-ai-600 tracking-tight leading-[1.02]; }
+  .card { @apply rounded-2xl border border-washi-300/70 bg-washi-50 shadow-card transition-shadow duration-300; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full border border-washi-300 bg-washi-50 px-3 py-1 text-xs font-medium text-sumi-500; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shu focus-visible:ring-offset-2 focus-visible:ring-offset-washi; }
+  .btn-primary { @apply btn relative overflow-hidden bg-shu text-white hover:bg-shu-600 hover:-translate-y-0.5 active:translate-y-0 active:scale-[.98] shadow-[0_8px_20px_-8px_rgba(194,67,47,.6)]; }
+  .btn-primary::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); transition: transform .7s ease; }
+  .btn-primary:hover::after { transform: translateX(120%) skewX(-20deg); }
+  .btn-ghost { @apply btn border border-ai-600/20 text-ai-600 hover:bg-ai-600 hover:text-white active:scale-[.98]; }
+}
+
+/* Faint washi grid behind hero (Firecrawl / Saaspo "grid-line" pattern) */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(31,58,95,.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31,58,95,.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 75%);
+}
+
+/* Paper grain */
+.grain::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .35; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.16  0 0 0 0 0.22  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+@media print {
+  body { background: white; }
+  @page { margin: 12mm; }
+}
+
+/* Soft pulsing ring (map pins, live badges) */
+@keyframes ping-soft { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.4); opacity: 0; } }
+.ping-soft { animation: ping-soft 1.8s cubic-bezier(0,0,.2,1) infinite; }
+
+/* Slowly drifting colour wash behind hero sections */
+@keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-20px) scale(1.08); } }
+.drift { animation: drift 14s ease-in-out infinite; }
+
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
