@@ -6,11 +6,17 @@ import SakuraPetals from "./decor/SakuraPetals";
 
 const KEY = "shojin-pass:intro-seen";
 const EASE = [0.22, 1, 0.36, 1] as const;
+const STILL_MS = 2000; // reduced motion: shown still this long
+
+// The tab counts as "seen" only once the intro ends. Marking it at the start broke React Strict
+// Mode (dev runs effects twice: the second run found the mark and skipped the intro).
+const markSeen = () => { try { sessionStorage.setItem(KEY, "1"); } catch {} };
 
 /**
  * Welcome intro: the 精 seal stamps onto the page with a welcoming line, then flies
  * into the logo spot in the top-left corner and the site appears underneath.
- * Plays once per browser tab; tap / click / any key skips it. Skipped for reduced motion.
+ * Plays once per browser tab; tap / click / any key skips it. With "reduce motion" it is shown
+ * still (no movement) for about 2 seconds, then the site appears.
  */
 export default function Intro() {
   const { phase, setPhase } = useIntro();
@@ -21,6 +27,8 @@ export default function Intro() {
   const fly = useCallback(() => {
     if (flying.current) return;
     flying.current = true;
+    markSeen();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setPhase("done"); return; } // no flight
     const to = document.getElementById("brand-seal")?.getBoundingClientRect();
     const from = sealRef.current?.getBoundingClientRect();
     if (to && from) {
@@ -38,11 +46,10 @@ export default function Intro() {
     let seen = false;
     try { seen = sessionStorage.getItem(KEY) === "1"; } catch {}
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen || reduce) { setPhase("done"); return; }
-    try { sessionStorage.setItem(KEY, "1"); } catch {}
+    if (seen) { setPhase("done"); return; }
     window.scrollTo(0, 0);
     setPhase("intro");
-    const t = setTimeout(fly, 3000);
+    const t = setTimeout(fly, reduce ? STILL_MS : 3000);
     const onKey = () => fly();
     window.addEventListener("keydown", onKey);
     return () => { clearTimeout(t); window.removeEventListener("keydown", onKey); };

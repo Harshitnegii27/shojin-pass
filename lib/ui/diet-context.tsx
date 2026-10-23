@@ -47,7 +47,7 @@ function readPrefs(): { family?: Member[]; lang?: Lang } | null {
 // Site-wide dietary preferences, remembered per browser. Person 1's diet and the language are also
 // the diet the Shojin client keeps (localStorage first, then the saved profile when signed in).
 export function DietProvider({ children }: { children: ReactNode }) {
-  const { client, userId } = useShojin();
+  const { client, whenReady } = useShojin();
   const [family, setFamily] = useState<Member[]>(DEFAULT);
   const [lang, setLang] = useState<Lang>("en");
   const [options, setOptions] = useState<string[]>([]);
@@ -76,20 +76,21 @@ export function DietProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(KEY, JSON.stringify({ family, lang })); } catch {}
   }, [loaded, family, lang]);
 
-  // Keep the shared diet in step with Person 1, and save it to the profile when it changes or right
-  // after a new sign-in. An unchanged diet on an ordinary visit sends nothing.
+  // Keep the shared diet in step with Person 1 and save it to the profile when it changes. The save
+  // waits for sign-in (whenReady); signed out, the client keeps it local and sends it after sign-in.
+  // An unchanged diet on an ordinary visit sends nothing.
   const p1 = family[0].diet;
-  const saved = useRef<{ key: string; userId: string | null } | null>(null);
+  const saved = useRef<string | null>(null);
   useEffect(() => {
     if (!loaded) return;
     const key = JSON.stringify([p1, options, lang]);
     const prev = saved.current;
-    saved.current = { key, userId };
+    saved.current = key;
     const synced = client.loadDiet();
     const sameAsStored = synced && JSON.stringify([synced.preset, synced.options, synced.lang]) === key;
-    if (prev ? prev.key === key && (prev.userId === userId || !userId) : sameAsStored) return;
-    client.saveDiet({ preset: p1, options, lang });
-  }, [loaded, client, p1, options, lang, userId]);
+    if (prev === null ? sameAsStored : prev === key) return;
+    client.saveDiet({ preset: p1, options, lang }, { waitFor: whenReady });
+  }, [loaded, client, whenReady, p1, options, lang]);
 
   const updateMember: Ctx["updateMember"] = (id, patch) =>
     setFamily((f) => f.map((m) => (m.id === id ? { ...m, ...patch } : m)));

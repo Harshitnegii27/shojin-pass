@@ -146,6 +146,75 @@ describe('ensureSession (the app screens sign in once, like /dev)', () => {
   });
 });
 
+describe('saving the diet before sign-in has finished', () => {
+  // A Supabase stand-in whose session appears only after signInAnonymously.
+  function signInLater() {
+    let session = null;
+    return {
+      auth: {
+        getSession: vi.fn(async () => ({ data: { session } })),
+        signInAnonymously: vi.fn(async () => { session = { user: { id: 'u1' } }; return { data: { user: { id: 'u1' } }, error: null }; }),
+      },
+    };
+  }
+
+  it('waits for sign-in (waitFor) before saving to the profile', async () => {
+    const supabase = signInLater();
+    const fetchFn = fakeFetch({ 'PUT /api/profile': (b) => json(200, { data: b }) });
+    const c = createShojinClient({ supabase, storage: memoryStorage(), fetchFn, log: log() });
+    const order = [];
+    const waitFor = async () => { order.push('wait'); await c.ensureSession(async () => 't'); order.push('signed in'); };
+    expect(await c.saveDiet({ preset: 'jain_strict', lang: 'hi' }, { waitFor })).toMatchObject({ savedLocally: true, savedOnServer: true });
+    expect(order).toEqual(['wait', 'signed in']);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('no session after waiting: kept in localStorage only, silently, then saved to the profile once signed in', async () => {
+    const supabase = signInLater();
+    const storage = memoryStorage();
+    const fetchFn = fakeFetch({ 'PUT /api/profile': (b) => json(200, { data: b }) });
+    const l = log();
+    const c = createShojinClient({ supabase, storage, fetchFn, log: l });
+
+    const r = await c.saveDiet({ preset: 'jain_strict', options: ['avoid_alcohol'], lang: 'gu' }, { waitFor: async () => {} });
+    expect(r).toEqual({ diet: { preset: 'jain_strict', options: ['avoid_alcohol'], lang: 'gu' }, savedLocally: true, savedOnServer: false, pending: true });
+    expect(JSON.parse(storage.dump()[DIET_KEY]).preset).toBe('jain_strict');
+    expect(fetchFn).not.toHaveBeenCalled(); // no request that would only get a 401
+    expect(l.error).not.toHaveBeenCalled(); // no console error
+
+    expect((await c.ensureSession(async () => 't')).ok).toBe(true);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn.mock.calls[0][0]).toBe('/api/profile');
+    expect(JSON.parse(fetchFn.mock.calls[0][1].body)).toEqual({ preset: 'jain_strict', options: ['avoid_alcohol'], lang: 'gu' });
+
+    await c.ensureSession(async () => 't'); // already sent: nothing more
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(l.error).not.toHaveBeenCalled();
+  });
+
+  it('only the latest diet saved while signed out is sent', async () => {
+    const supabase = signInLater();
+    const fetchFn = fakeFetch({ 'PUT /api/profile': (b) => json(200, { data: b }) });
+    const c = createShojinClient({ supabase, storage: memoryStorage(), fetchFn, log: log() });
+    await c.saveDiet({ preset: 'vegetarian' });
+    await c.saveDiet({ preset: 'jain_flexible' });
+    await c.ensureSession(async () => 't');
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchFn.mock.calls[0][1].body).preset).toBe('jain_flexible');
+  });
+
+  it('sign-in fails: the diet stays local and waiting; nothing is sent', async () => {
+    const supabase = signInLater();
+    const fetchFn = fakeFetch({ 'PUT /api/profile': (b) => json(200, { data: b }) });
+    const c = createShojinClient({ supabase, storage: memoryStorage(), fetchFn, log: log() });
+    await c.saveDiet({ preset: 'vegetarian' });
+    expect((await c.ensureSession(async () => { throw new Error('Turnstile error'); })).ok).toBe(false);
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect((await c.ensureSession(async () => 't')).ok).toBe(true); // a later sign-in still sends it
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('explain failures are logged clearly', () => {
   it('a reply that is not JSON (framework error page) is named as such', async () => {
     const l = log();
