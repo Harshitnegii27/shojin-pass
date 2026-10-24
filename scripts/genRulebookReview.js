@@ -14,6 +14,34 @@ import { readRulebookFiles, reviewerCount } from '../lib/rulebook/loader.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'docs', 'rulebook-review.md');
 const OUT_CSV = path.join(ROOT, 'docs', 'rulebook-review.csv');
+const JMDICT_EXTRACT = path.join(ROOT, 'data', 'jmdict-extract.json');
+
+// data/jmdict-extract.json, built by scripts/buildJmdictExtract.js (JMdict © EDRDG, CC BY-SA 4.0).
+export function loadJmdictExtract() {
+  return JSON.parse(fs.readFileSync(JMDICT_EXTRACT, 'utf8'));
+}
+
+export const JMDICT_NOT_FOUND = '(not in JMdict)';
+const MAX_JMDICT_ENTRIES = 3;
+const MAX_JMDICT_SENSES = 3;
+
+// The English meaning of an entry's Japanese term in JMdict, for a reviewer to compare with ours. A kana
+// term matches many unrelated words (こしょう: name, fault, lake, pepper…), so JMdict entries sharing
+// another spelling with the entry's aliases (胡椒) come first; failing that, common words; failing that,
+// all of them. At most 3 entries (" | ") of at most 3 senses ("1. … 2. …") each.
+export function jmdictMeaning(entry, extract) {
+  const found = extract.entries[entry.canonical] || [];
+  if (!found.length) return JMDICT_NOT_FOUND;
+  const aliases = new Set(entry.aliases.filter((a) => a !== entry.canonical));
+  const byAlias = found.filter((j) => j.spellings.some((s) => aliases.has(s)));
+  const common = found.filter((j) => j.common);
+  const chosen = (byAlias.length ? byAlias : common.length ? common : found).slice(0, MAX_JMDICT_ENTRIES);
+  return chosen.map((j) => {
+    const senses = j.senses.slice(0, MAX_JMDICT_SENSES).map((g) => g.join('; '));
+    const more = j.senses.length > MAX_JMDICT_SENSES ? ' …' : '';
+    return (senses.length === 1 ? senses[0] : senses.map((s, i) => `${i + 1}. ${s}`).join(' ')) + more;
+  }).join(' | ');
+}
 
 // Colour of a list of tags for one diet or option: red if any tag is forbidden, amber if any is asked.
 // The same rule as the engine's tag table (spec 8.1–8.3); the engine stays the source of truth.
@@ -140,14 +168,15 @@ function csvCell(v) {
 
 export const CSV_REVIEW_COLUMNS = ['reviewer1', 'reviewer1_ok', 'reviewer2', 'reviewer2_ok', 'correction_notes'];
 
-// One row per entry, in rulebook order: id, term, aliases, meaning, tags, a red/amber/green column per
-// diet, then empty columns for the reviewers. UTF-8 without BOM, CRLF line ends.
-export function buildReviewCsv(data) {
+// One row per entry, in rulebook order: id, term, aliases, meaning, the term's meaning in JMdict, tags,
+// a red/amber/green column per diet, then empty columns for the reviewers. UTF-8 without BOM, CRLF line
+// ends.
+export function buildReviewCsv(data, jmdict = loadJmdictExtract()) {
   const { diets, ingredients } = data;
   const dietIds = Object.keys(diets);
-  const header = ['id', 'japanese_term', 'aliases', 'meaning', 'tags', ...dietIds, ...CSV_REVIEW_COLUMNS];
+  const header = ['id', 'japanese_term', 'aliases', 'meaning', 'jmdict_meaning', 'tags', ...dietIds, ...CSV_REVIEW_COLUMNS];
   const rows = ingredients.map((e) => [
-    e.id, e.canonical, e.aliases.join('、'), e.meaning.en, e.tags.join(' '),
+    e.id, e.canonical, e.aliases.join('、'), e.meaning.en, jmdictMeaning(e, jmdict), e.tags.join(' '),
     ...dietIds.map((d) => colourFor(e.tags, diets[d])),
     ...CSV_REVIEW_COLUMNS.map(() => ''),
   ]);

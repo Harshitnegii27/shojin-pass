@@ -22,6 +22,21 @@ const r = scanLabel({ raw: '原材料名：小麦粉、ラード\n内容量：10
 Until then set `RULEBOOK_ALLOW_UNREVIEWED=true` in development; without it, no ingredient is
 trusted and every label is amber (by design).
 
+The reviewers' checklist `docs/rulebook-review.csv` (for Google Sheets; `npm run review:doc` writes it
+and `docs/rulebook-review.md`) has a `jmdict_meaning` column: the English meaning of each entry's
+Japanese term in JMdict, to compare with ours. It comes from `data/jmdict-extract.json`, the few
+JMdict entries for those terms, built with
+`node scripts/buildJmdictExtract.js path/to/JMdict_e.gz` (download
+[JMdict_e.gz](http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz); keep it outside the repo). The engine
+never reads it, and terms JMdict doesn't have show `(not in JMdict)`.
+
+**JMdict credit:** this project uses the [JMdict](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project)
+dictionary files. These files are the property of the
+[Electronic Dictionary Research and Development Group](https://www.edrdg.org/) (EDRDG) and are used in
+conformance with the Group's [licence](https://www.edrdg.org/edrdg/licence.html): Creative Commons
+Attribution-ShareAlike 4.0 (CC BY-SA 4.0). `data/jmdict-extract.json` and the `jmdict_meaning` column
+of `docs/rulebook-review.csv` are derived from JMdict and are shared under the same licence.
+
 | Folder | What |
 |---|---|
 | `rulebook/` | tags, presets, options, ingredients (125 entries, ~1,800 spellings), annotations, field markers, chef phrases |

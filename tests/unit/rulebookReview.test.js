@@ -3,7 +3,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { readRulebookFiles } from '../../lib/rulebook/loader.js';
-import { buildReviewDoc, buildReviewCsv, colourFor, CSV_REVIEW_COLUMNS } from '../../scripts/genRulebookReview.js';
+import {
+  buildReviewDoc, buildReviewCsv, colourFor, CSV_REVIEW_COLUMNS, jmdictMeaning, loadJmdictExtract, JMDICT_NOT_FOUND,
+} from '../../scripts/genRulebookReview.js';
+import { buildExtract } from '../../scripts/buildJmdictExtract.js';
 
 // Minimal RFC 4180 reader (quoted cells, doubled quotes, CRLF), as a spreadsheet would read it.
 function parseCsv(text) {
@@ -52,7 +55,7 @@ describe('rulebook review checklist', () => {
     expect(csv.endsWith('\r\n')).toBe(true);
     const [header, ...rows] = parseCsv(csv);
     const diets = Object.keys(data.diets);
-    expect(header).toEqual(['id', 'japanese_term', 'aliases', 'meaning', 'tags', ...diets, ...CSV_REVIEW_COLUMNS]);
+    expect(header).toEqual(['id', 'japanese_term', 'aliases', 'meaning', 'jmdict_meaning', 'tags', ...diets, ...CSV_REVIEW_COLUMNS]);
     expect(rows).toHaveLength(data.ingredients.length);
     expect(rows.map((r) => r[0])).toEqual(data.ingredients.map((e) => e.id));
     for (const r of rows) {
@@ -73,6 +76,51 @@ describe('rulebook review checklist', () => {
     const fake = { ...data, ingredients: [{ id: 'x', canonical: '=HYPERLINK("http://evil")', aliases: ['+1'], meaning: { en: '-a, "b"' }, tags: ['meat'] }] };
     const [, row] = parseCsv(buildReviewCsv(fake));
     expect(row.slice(0, 4)).toEqual(['x', '\'=HYPERLINK("http://evil")', "'+1", '\'-a, "b"']);
+  });
+
+  it('CSV: jmdict_meaning from the bundled JMdict extract', () => {
+    const [header, ...rows] = parseCsv(buildReviewCsv(data));
+    const col = header.indexOf('jmdict_meaning');
+    const cell = (id) => rows.find((r) => r[0] === id)[col];
+    expect(cell('pork')).toBe('pork');
+    expect(cell('salmon')).toContain('salmon'); // さけ: the fish, not 酒
+    expect(cell('salmon')).not.toContain('sake');
+    expect(cell('herbs_spices')).toBe('pepper'); // こしょう: 胡椒, not 故障 or 湖沼
+    expect(cell('animal_fat_generic')).toBe(JMDICT_NOT_FOUND);
+    expect(rows.every((r) => r[col] !== '')).toBe(true);
+  });
+
+  it('the JMdict extract covers every term and credits EDRDG', () => {
+    const extract = loadJmdictExtract();
+    for (const e of data.ingredients) expect(extract.entries).toHaveProperty([e.canonical]);
+    expect(extract.license).toMatch(/EDRDG.*CC BY-SA 4\.0/);
+  });
+
+  it('jmdictMeaning: alias spellings, then common words, then all; senses numbered and capped', () => {
+    const j = (seq, common, spellings, senses) => ({ seq, common, spellings, senses });
+    const extract = { entries: {
+      かな: [j(1, true, ['仮名', 'かな'], [['kana']]), j(2, false, ['哉', 'かな'], [['I wonder']])],
+      たね: [j(3, false, ['種', 'たね'], [['seed'], ['cause'], ['trick'], ['breed']]), j(4, false, ['胤', 'たね'], [['offspring']])],
+      ない: [],
+    } };
+    expect(jmdictMeaning({ canonical: 'かな', aliases: ['かな', '哉'] }, extract)).toBe('I wonder');
+    expect(jmdictMeaning({ canonical: 'かな', aliases: ['かな'] }, extract)).toBe('kana');
+    expect(jmdictMeaning({ canonical: 'たね', aliases: ['たね'] }, extract)).toBe('1. seed 2. cause 3. trick … | offspring');
+    expect(jmdictMeaning({ canonical: 'ない', aliases: [] }, extract)).toBe(JMDICT_NOT_FOUND);
+    expect(jmdictMeaning({ canonical: '無い', aliases: [] }, extract)).toBe(JMDICT_NOT_FOUND);
+  });
+
+  it('buildExtract: exact spelling matches only, sense restrictions respected, XML entities decoded', () => {
+    const xml = `<!-- JMdict created: 2026-01-02 -->
+<entry><ent_seq>10</ent_seq><k_ele><keb>生</keb><ke_pri>ichi1</ke_pri></k_ele><r_ele><reb>なま</reb></r_ele><r_ele><reb>き</reb></r_ele>
+<sense><stagr>なま</stagr><pos>&n;</pos><gloss>raw</gloss></sense><sense><stagr>き</stagr><gloss>pure</gloss></sense><sense><gloss>R&amp;D</gloss></sense></entry>
+<entry><ent_seq>11</ent_seq><k_ele><keb>生地</keb></k_ele><r_ele><reb>きじ</reb></r_ele><sense><gloss g_type="lit">dough</gloss></sense></entry>`;
+    const ex = buildExtract(xml, ['なま', '生', 'きじ', '生き']);
+    expect(ex.created).toBe('2026-01-02');
+    expect(ex.entries['なま']).toEqual([{ seq: 10, common: false, spellings: ['生', 'なま', 'き'], senses: [['raw'], ['R&D']] }]);
+    expect(ex.entries['生'][0]).toMatchObject({ common: true, senses: [['raw'], ['pure'], ['R&D']] });
+    expect(ex.entries['きじ'][0].senses).toEqual([['dough']]);
+    expect(ex.entries['生き']).toEqual([]);
   });
 
   it('does not change the rulebook data', () => {

@@ -1,0 +1,3228 @@
+{
+  "source": "JMdict (JMdict_e)",
+  "created": "2026-10-24",
+  "entries": {
+    "豚肉": [
+      {
+        "seq": 1457440,
+        "common": true,
+        "spellings": [
+          "豚肉",
+          "ブタ肉",
+          "ぶた肉",
+          "ぶたにく",
+          "とんにく"
+        ],
+        "senses": [
+          [
+            "pork"
+          ]
+        ]
+      }
+    ],
+    "牛肉": [
+      {
+        "seq": 1231580,
+        "common": true,
+        "spellings": [
+          "牛肉",
+          "ぎゅうにく"
+        ],
+        "senses": [
+          [
+            "beef"
+          ]
+        ]
+      }
+    ],
+    "肉": [
+      {
+        "seq": 1463520,
+        "common": true,
+        "spellings": [
+          "肉",
+          "にく"
+        ],
+        "senses": [
+          [
+            "flesh"
+          ],
+          [
+            "meat"
+          ],
+          [
+            "flesh (of a fruit)",
+            "pulp"
+          ],
+          [
+            "the physical body (as opposed to the spirit)",
+            "flesh"
+          ],
+          [
+            "thickness"
+          ],
+          [
+            "content",
+            "substance",
+            "flesh"
+          ],
+          [
+            "ink pad"
+          ]
+        ]
+      },
+      {
+        "seq": 2849347,
+        "common": false,
+        "spellings": [
+          "肉",
+          "宍",
+          "しし"
+        ],
+        "senses": [
+          [
+            "flesh (esp. of an animal)",
+            "meat"
+          ]
+        ]
+      }
+    ],
+    "ハム": [
+      {
+        "seq": 1096180,
+        "common": true,
+        "spellings": [
+          "ハム"
+        ],
+        "senses": [
+          [
+            "ham (cured pig meat)"
+          ],
+          [
+            "ham (amateur radio enthusiast)"
+          ]
+        ]
+      },
+      {
+        "seq": 2843768,
+        "common": false,
+        "spellings": [
+          "ハム"
+        ],
+        "senses": [
+          [
+            "hum (of a TV, radio, etc.)"
+          ]
+        ]
+      }
+    ],
+    "ベーコン": [
+      {
+        "seq": 1119160,
+        "common": true,
+        "spellings": [
+          "ベーコン"
+        ],
+        "senses": [
+          [
+            "bacon"
+          ]
+        ]
+      }
+    ],
+    "ソーセージ": [
+      {
+        "seq": 1075300,
+        "common": true,
+        "spellings": [
+          "ソーセージ"
+        ],
+        "senses": [
+          [
+            "sausage"
+          ]
+        ]
+      }
+    ],
+    "チャーシュー": [
+      {
+        "seq": 2012280,
+        "common": false,
+        "spellings": [
+          "叉焼",
+          "チャーシュー"
+        ],
+        "senses": [
+          [
+            "roasted pork fillet (often used in ramen)"
+          ]
+        ]
+      }
+    ],
+    "ラム肉": [],
+    "ラム": [
+      {
+        "seq": 1139820,
+        "common": true,
+        "spellings": [
+          "ラム"
+        ],
+        "senses": [
+          [
+            "lamb"
+          ],
+          [
+            "lamb (meat)"
+          ]
+        ]
+      },
+      {
+        "seq": 2842178,
+        "common": true,
+        "spellings": [
+          "ラム"
+        ],
+        "senses": [
+          [
+            "rum"
+          ]
+        ]
+      },
+      {
+        "seq": 2195090,
+        "common": false,
+        "spellings": [
+          "ＲＡＭ",
+          "ラム"
+        ],
+        "senses": [
+          [
+            "random-access memory",
+            "RAM"
+          ]
+        ]
+      },
+      {
+        "seq": 2842179,
+        "common": false,
+        "spellings": [
+          "ラム"
+        ],
+        "senses": [
+          [
+            "ram"
+          ]
+        ]
+      },
+      {
+        "seq": 2842181,
+        "common": false,
+        "spellings": [
+          "ランプ",
+          "ラム"
+        ],
+        "senses": [
+          [
+            "rump"
+          ]
+        ]
+      }
+    ],
+    "馬肉": [
+      {
+        "seq": 1471840,
+        "common": true,
+        "spellings": [
+          "馬肉",
+          "ばにく"
+        ],
+        "senses": [
+          [
+            "horse meat",
+            "horsemeat"
+          ]
+        ]
+      }
+    ],
+    "レバー": [
+      {
+        "seq": 1145720,
+        "common": true,
+        "spellings": [
+          "レバー"
+        ],
+        "senses": [
+          [
+            "liver"
+          ]
+        ]
+      },
+      {
+        "seq": 2855138,
+        "common": true,
+        "spellings": [
+          "レバー"
+        ],
+        "senses": [
+          [
+            "lever"
+          ],
+          [
+            "joystick"
+          ]
+        ]
+      }
+    ],
+    "ヘム鉄": [
+      {
+        "seq": 2849819,
+        "common": false,
+        "spellings": [
+          "ヘム鉄",
+          "ヘムてつ"
+        ],
+        "senses": [
+          [
+            "heme iron"
+          ]
+        ]
+      }
+    ],
+    "骨": [
+      {
+        "seq": 1288550,
+        "common": true,
+        "spellings": [
+          "骨",
+          "ほね"
+        ],
+        "senses": [
+          [
+            "bone"
+          ],
+          [
+            "frame"
+          ],
+          [
+            "outline",
+            "core"
+          ],
+          [
+            "backbone",
+            "spirit",
+            "fortitude"
+          ],
+          [
+            "laborious",
+            "troublesome",
+            "difficult"
+          ]
+        ]
+      },
+      {
+        "seq": 1288540,
+        "common": false,
+        "spellings": [
+          "骨",
+          "こつ",
+          "コツ"
+        ],
+        "senses": [
+          [
+            "knack",
+            "skill",
+            "trick",
+            "secret",
+            "know-how",
+            "the ropes",
+            "hang"
+          ],
+          [
+            "bone",
+            "skeleton"
+          ],
+          [
+            "cremated remains (esp. the bones)",
+            "ashes"
+          ]
+        ]
+      }
+    ],
+    "鶏肉": [
+      {
+        "seq": 1253020,
+        "common": true,
+        "spellings": [
+          "鶏肉",
+          "鳥肉",
+          "とり肉",
+          "とりにく",
+          "けいにく",
+          "ちょうにく"
+        ],
+        "senses": [
+          [
+            "chicken meat"
+          ]
+        ]
+      }
+    ],
+    "鴨": [
+      {
+        "seq": 1209250,
+        "common": true,
+        "spellings": [
+          "鴨",
+          "鳧",
+          "かも",
+          "カモ"
+        ],
+        "senses": [
+          [
+            "duck"
+          ],
+          [
+            "easy mark",
+            "sucker",
+            "sitting duck"
+          ]
+        ]
+      }
+    ],
+    "七面鳥": [
+      {
+        "seq": 1319520,
+        "common": true,
+        "spellings": [
+          "七面鳥",
+          "七面鶏",
+          "しちめんちょう",
+          "シチメンチョウ"
+        ],
+        "senses": [
+          [
+            "turkey (Meleagris gallopavo)"
+          ]
+        ]
+      }
+    ],
+    "鶏ガラ": [
+      {
+        "seq": 2138350,
+        "common": false,
+        "spellings": [
+          "鶏がら",
+          "鶏ガラ",
+          "鳥ガラ",
+          "鳥がら",
+          "鳥殻",
+          "鶏殻",
+          "とりがら",
+          "とりガラ"
+        ],
+        "senses": [
+          [
+            "chicken bones",
+            "chicken carcass"
+          ]
+        ]
+      }
+    ],
+    "ポークエキス": [
+      {
+        "seq": 2850794,
+        "common": false,
+        "spellings": [
+          "ポークエキス",
+          "ポーク・エキス"
+        ],
+        "senses": [
+          [
+            "pork extract",
+            "(dehydrated or concentrated) pork stock"
+          ]
+        ]
+      }
+    ],
+    "ビーフエキス": [
+      {
+        "seq": 2850795,
+        "common": false,
+        "spellings": [
+          "ビーフエキス",
+          "ビーフ・エキス"
+        ],
+        "senses": [
+          [
+            "beef extract",
+            "(dehydrated or concentrated) beef stock"
+          ]
+        ]
+      }
+    ],
+    "肉エキス": [
+      {
+        "seq": 2850780,
+        "common": false,
+        "spellings": [
+          "肉エキス",
+          "にくエキス"
+        ],
+        "senses": [
+          [
+            "meat extract",
+            "(dehydrated or concentrated) meat stock"
+          ]
+        ]
+      }
+    ],
+    "コンドロイチン": [
+      {
+        "seq": 2819290,
+        "common": false,
+        "spellings": [
+          "コンドロイチン"
+        ],
+        "senses": [
+          [
+            "chondroitin"
+          ]
+        ]
+      }
+    ],
+    "ラード": [
+      {
+        "seq": 1137680,
+        "common": true,
+        "spellings": [
+          "ラード"
+        ],
+        "senses": [
+          [
+            "lard"
+          ]
+        ]
+      }
+    ],
+    "牛脂": [
+      {
+        "seq": 1231500,
+        "common": false,
+        "spellings": [
+          "牛脂",
+          "ぎゅうし"
+        ],
+        "senses": [
+          [
+            "beef tallow"
+          ]
+        ]
+      }
+    ],
+    "動物性油脂": [],
+    "ゼラチン": [
+      {
+        "seq": 1075180,
+        "common": true,
+        "spellings": [
+          "ゼラチン",
+          "ジェラチン"
+        ],
+        "senses": [
+          [
+            "gelatin",
+            "gelatine"
+          ]
+        ]
+      }
+    ],
+    "コラーゲン": [
+      {
+        "seq": 1051290,
+        "common": false,
+        "spellings": [
+          "コラーゲン"
+        ],
+        "senses": [
+          [
+            "collagen"
+          ]
+        ]
+      }
+    ],
+    "かつお節": [
+      {
+        "seq": 1208860,
+        "common": false,
+        "spellings": [
+          "鰹節",
+          "かつお節",
+          "勝男武士",
+          "カツオ節",
+          "かつおぶし",
+          "かつぶし"
+        ],
+        "senses": [
+          [
+            "katsuobushi",
+            "pieces of sliced dried bonito"
+          ]
+        ]
+      }
+    ],
+    "かつお": [
+      {
+        "seq": 1208850,
+        "common": true,
+        "spellings": [
+          "鰹",
+          "松魚",
+          "堅魚",
+          "カツオ",
+          "かつお"
+        ],
+        "senses": [
+          [
+            "skipjack tuna (Katsuwonus pelamis)",
+            "oceanic bonito",
+            "victorfish"
+          ]
+        ]
+      }
+    ],
+    "さば": [
+      {
+        "seq": 1299610,
+        "common": true,
+        "spellings": [
+          "鯖",
+          "さば",
+          "サバ"
+        ],
+        "senses": [
+          [
+            "mackerel (esp. the chub mackerel, Scomber japonicus)"
+          ],
+          [
+            "server (esp. in an online game)"
+          ]
+        ]
+      }
+    ],
+    "さけ": [
+      {
+        "seq": 1329010,
+        "common": true,
+        "spellings": [
+          "酒",
+          "さけ"
+        ],
+        "senses": [
+          [
+            "alcohol",
+            "sake"
+          ]
+        ]
+      },
+      {
+        "seq": 1579300,
+        "common": true,
+        "spellings": [
+          "鮭",
+          "さけ",
+          "しゃけ",
+          "サケ",
+          "シャケ"
+        ],
+        "senses": [
+          [
+            "salmon (Salmonidae spp.)"
+          ],
+          [
+            "chum salmon (Oncorhynchus keta)",
+            "dog salmon"
+          ]
+        ]
+      },
+      {
+        "seq": 2576150,
+        "common": false,
+        "spellings": [
+          "さかい",
+          "さけ",
+          "さかいに"
+        ],
+        "senses": [
+          [
+            "because",
+            "since"
+          ]
+        ]
+      }
+    ],
+    "まぐろ": [
+      {
+        "seq": 1524880,
+        "common": true,
+        "spellings": [
+          "鮪",
+          "マグロ",
+          "まぐろ"
+        ],
+        "senses": [
+          [
+            "tuna (Thunnus spp.; esp. the Pacific bluefin)"
+          ],
+          [
+            "dead fish (person who is unresponsive or passive during sex)",
+            "starfish"
+          ],
+          [
+            "body of a person struck by a train"
+          ],
+          [
+            "person unconscious due to alcohol"
+          ]
+        ]
+      }
+    ],
+    "いわし": [
+      {
+        "seq": 1587860,
+        "common": true,
+        "spellings": [
+          "鰯",
+          "鰮",
+          "いわし",
+          "イワシ"
+        ],
+        "senses": [
+          [
+            "pilchard (esp. Japanese pilchard, Sardinops melanostictus)",
+            "sardine"
+          ]
+        ]
+      }
+    ],
+    "あじ": [
+      {
+        "seq": 1526960,
+        "common": true,
+        "spellings": [
+          "味",
+          "あじ"
+        ],
+        "senses": [
+          [
+            "flavor",
+            "flavour",
+            "taste"
+          ],
+          [
+            "charm",
+            "appeal",
+            "uniqueness",
+            "attractiveness"
+          ],
+          [
+            "experience",
+            "taste (e.g. of victory)"
+          ],
+          [
+            "smart",
+            "clever",
+            "witty",
+            "strange"
+          ],
+          [
+            "aji",
+            "position that has some lingering potential that may be exploited later in the game"
+          ]
+        ]
+      },
+      {
+        "seq": 1586400,
+        "common": true,
+        "spellings": [
+          "鯵",
+          "鰺",
+          "アジ",
+          "あじ"
+        ],
+        "senses": [
+          [
+            "horse mackerel (Carangidae spp., esp. the Japanese horse mackerel, Trachurus japonicus)",
+            "jack mackerel",
+            "pompano",
+            "scad"
+          ]
+        ]
+      },
+      {
+        "seq": 1856390,
+        "common": false,
+        "spellings": [
+          "阿字",
+          "あじ"
+        ],
+        "senses": [
+          [
+            "first Sanskrit alphabet letter (in esoteric Buddhism symbolizes the source of all things)"
+          ]
+        ]
+      },
+      {
+        "seq": 2787920,
+        "common": false,
+        "spellings": [
+          "按司",
+          "あじ",
+          "あんじ",
+          "あんず"
+        ],
+        "senses": [
+          [
+            "chieftain (of the Ryukyu Kingdom)"
+          ]
+        ]
+      }
+    ],
+    "たら": [
+      {
+        "seq": 2029050,
+        "common": true,
+        "spellings": [
+          "たら",
+          "ったら",
+          "だら"
+        ],
+        "senses": [
+          [
+            "if",
+            "when",
+            "after"
+          ],
+          [
+            "when it comes to ...",
+            "as for ...",
+            "that ..."
+          ],
+          [
+            "why don't you ...",
+            "why not ...",
+            "how about ...",
+            "what about ..."
+          ],
+          [
+            "I tell you!",
+            "I said ...",
+            "I really mean ..."
+          ],
+          [
+            "vocative particle"
+          ]
+        ]
+      },
+      {
+        "seq": 1408160,
+        "common": false,
+        "spellings": [
+          "多羅",
+          "たら"
+        ],
+        "senses": [
+          [
+            "palmyra"
+          ],
+          [
+            "lusterleaf holly"
+          ],
+          [
+            "patra (silver incense dish placed in front of a Buddhist statue)"
+          ]
+        ]
+      },
+      {
+        "seq": 1416790,
+        "common": false,
+        "spellings": [
+          "鱈",
+          "大口魚",
+          "鰔",
+          "たら",
+          "タラ"
+        ],
+        "senses": [
+          [
+            "gadid (any fish of the family Gadidae, incl. cod, haddock, whiting and pollack)"
+          ],
+          [
+            "Pacific cod (Gadus macrocephalus)"
+          ]
+        ]
+      }
+    ],
+    "いくら": [
+      {
+        "seq": 1219980,
+        "common": true,
+        "spellings": [
+          "幾ら",
+          "いくら"
+        ],
+        "senses": [
+          [
+            "how much"
+          ],
+          [
+            "something over",
+            "and something",
+            "-odd"
+          ],
+          [
+            "however (much)",
+            "no matter how"
+          ]
+        ]
+      },
+      {
+        "seq": 1021180,
+        "common": false,
+        "spellings": [
+          "イクラ",
+          "いくら"
+        ],
+        "senses": [
+          [
+            "salted salmon roe"
+          ]
+        ]
+      }
+    ],
+    "魚": [
+      {
+        "seq": 1578010,
+        "common": true,
+        "spellings": [
+          "魚",
+          "さかな",
+          "うお"
+        ],
+        "senses": [
+          [
+            "fish"
+          ]
+        ]
+      }
+    ],
+    "ほたて": [
+      {
+        "seq": 1481270,
+        "common": false,
+        "spellings": [
+          "帆立",
+          "ほたて",
+          "ホタテ"
+        ],
+        "senses": [
+          [
+            "Japanese scallop (Patinopecten yessoensis)",
+            "Yesso scallop"
+          ]
+        ]
+      }
+    ],
+    "えび": [
+      {
+        "seq": 1588720,
+        "common": true,
+        "spellings": [
+          "海老",
+          "蝦",
+          "蛯",
+          "鰕",
+          "えび",
+          "エビ"
+        ],
+        "senses": [
+          [
+            "prawn",
+            "shrimp",
+            "lobster"
+          ]
+        ]
+      },
+      {
+        "seq": 1499230,
+        "common": false,
+        "spellings": [
+          "葡萄",
+          "ぶどう",
+          "ブドウ",
+          "えび"
+        ],
+        "senses": [
+          [
+            "grape",
+            "grapevine"
+          ]
+        ]
+      }
+    ],
+    "いか": [
+      {
+        "seq": 1155060,
+        "common": true,
+        "spellings": [
+          "以下",
+          "已下",
+          "いか",
+          "いげ"
+        ],
+        "senses": [
+          [
+            "not exceeding ...",
+            "not more than ...",
+            "... and under",
+            "... and below",
+            "... or fewer"
+          ],
+          [
+            "below (a standard, level, etc.)",
+            "under",
+            "beneath",
+            "less than"
+          ],
+          [
+            "the following",
+            "the below-mentioned",
+            "the rest",
+            "followed by ..."
+          ],
+          [
+            "including ...",
+            "... and other (employees, officials, etc.)"
+          ]
+        ]
+      },
+      {
+        "seq": 1159770,
+        "common": true,
+        "spellings": [
+          "医科",
+          "いか"
+        ],
+        "senses": [
+          [
+            "medical science",
+            "medical department"
+          ]
+        ]
+      },
+      {
+        "seq": 1171570,
+        "common": true,
+        "spellings": [
+          "烏賊",
+          "柔魚",
+          "鰞",
+          "イカ",
+          "いか"
+        ],
+        "senses": [
+          [
+            "cuttlefish",
+            "squid"
+          ]
+        ]
+      },
+      {
+        "seq": 1157550,
+        "common": false,
+        "spellings": [
+          "異化",
+          "いか"
+        ],
+        "senses": [
+          [
+            "dissimilation"
+          ],
+          [
+            "catabolism"
+          ],
+          [
+            "dissimilation (phonology)"
+          ],
+          [
+            "defamiliarization (artistic technique)",
+            "ostranenie",
+            "alienation"
+          ]
+        ]
+      },
+      {
+        "seq": 1158720,
+        "common": false,
+        "spellings": [
+          "衣架",
+          "いか"
+        ],
+        "senses": [
+          [
+            "clothes rack"
+          ]
+        ]
+      },
+      {
+        "seq": 1159760,
+        "common": false,
+        "spellings": [
+          "医家",
+          "いか"
+        ],
+        "senses": [
+          [
+            "family of doctors"
+          ],
+          [
+            "doctor"
+          ]
+        ]
+      },
+      {
+        "seq": 2835070,
+        "common": false,
+        "spellings": [
+          "五十日",
+          "いか"
+        ],
+        "senses": [
+          [
+            "fiftieth day after the birth of a child"
+          ],
+          [
+            "fifty days"
+          ]
+        ]
+      },
+      {
+        "seq": 2856178,
+        "common": false,
+        "spellings": [
+          "易化",
+          "いか"
+        ],
+        "senses": [
+          [
+            "simplification",
+            "facilitation",
+            "becoming easy"
+          ]
+        ]
+      },
+      {
+        "seq": 2858526,
+        "common": false,
+        "spellings": [
+          "凧",
+          "紙鳶",
+          "いかのぼり",
+          "いか"
+        ],
+        "senses": [
+          [
+            "kite"
+          ]
+        ]
+      }
+    ],
+    "かまぼこ": [
+      {
+        "seq": 1209060,
+        "common": false,
+        "spellings": [
+          "蒲鉾",
+          "かまぼこ",
+          "カマボコ"
+        ],
+        "senses": [
+          [
+            "kamaboko",
+            "steamed seasoned fish paste, usu. in a semicylindrical shape on a strip of wood and sliced to go in soup, etc."
+          ]
+        ]
+      }
+    ],
+    "魚醤": [
+      {
+        "seq": 2112230,
+        "common": false,
+        "spellings": [
+          "魚醤",
+          "ぎょしょう"
+        ],
+        "senses": [
+          [
+            "fish sauce (made from fermented salted fish)"
+          ]
+        ]
+      }
+    ],
+    "しらこたん白": [],
+    "キトサン": [
+      {
+        "seq": 2842477,
+        "common": false,
+        "spellings": [
+          "キトサン"
+        ],
+        "senses": [
+          [
+            "chitosan"
+          ]
+        ]
+      }
+    ],
+    "グルコサミン": [
+      {
+        "seq": 2461340,
+        "common": false,
+        "spellings": [
+          "グルコサミン"
+        ],
+        "senses": [
+          [
+            "glucosamine"
+          ]
+        ]
+      }
+    ],
+    "DHA": [],
+    "和風だし": [],
+    "だし": [
+      {
+        "seq": 1302910,
+        "common": true,
+        "spellings": [
+          "山車",
+          "花車",
+          "だし",
+          "さんしゃ"
+        ],
+        "senses": [
+          [
+            "parade float",
+            "festival float"
+          ]
+        ]
+      },
+      {
+        "seq": 1339160,
+        "common": true,
+        "spellings": [
+          "出し",
+          "出汁",
+          "だし",
+          "ダシ"
+        ],
+        "senses": [
+          [
+            "dashi",
+            "Japanese soup stock made from fish and kelp"
+          ]
+        ]
+      }
+    ],
+    "卵": [
+      {
+        "seq": 1549140,
+        "common": true,
+        "spellings": [
+          "卵",
+          "玉子",
+          "たまご"
+        ],
+        "senses": [
+          [
+            "eggs",
+            "egg",
+            "spawn",
+            "roe"
+          ],
+          [
+            "(hen's) egg"
+          ],
+          [
+            "a ... in the making",
+            "future (lawyer, doctor, etc.)",
+            "budding ..."
+          ],
+          [
+            "beginning",
+            "origin",
+            "infancy"
+          ]
+        ]
+      },
+      {
+        "seq": 2647520,
+        "common": false,
+        "spellings": [
+          "卵",
+          "殻",
+          "稃",
+          "かい",
+          "かいご"
+        ],
+        "senses": [
+          [
+            "egg",
+            "eggshell"
+          ]
+        ]
+      },
+      {
+        "seq": 2647530,
+        "common": false,
+        "spellings": [
+          "卵",
+          "らん"
+        ],
+        "senses": [
+          [
+            "ovum",
+            "ovule",
+            "egg cell"
+          ]
+        ]
+      }
+    ],
+    "卵白": [
+      {
+        "seq": 1549310,
+        "common": true,
+        "spellings": [
+          "卵白",
+          "らんぱく"
+        ],
+        "senses": [
+          [
+            "white of an egg",
+            "albumen"
+          ]
+        ]
+      }
+    ],
+    "マヨネーズ": [
+      {
+        "seq": 1129260,
+        "common": true,
+        "spellings": [
+          "マヨネーズ"
+        ],
+        "senses": [
+          [
+            "mayonnaise"
+          ]
+        ]
+      }
+    ],
+    "乳": [
+      {
+        "seq": 1464980,
+        "common": true,
+        "spellings": [
+          "乳",
+          "ちち",
+          "ち"
+        ],
+        "senses": [
+          [
+            "milk"
+          ],
+          [
+            "breast"
+          ],
+          [
+            "loop"
+          ],
+          [
+            "decorative bump (on a hanging bell)"
+          ]
+        ]
+      }
+    ],
+    "クリーム": [
+      {
+        "seq": 1044480,
+        "common": true,
+        "spellings": [
+          "クリーム"
+        ],
+        "senses": [
+          [
+            "cream"
+          ],
+          [
+            "ice cream"
+          ]
+        ]
+      }
+    ],
+    "チーズ": [
+      {
+        "seq": 1077330,
+        "common": true,
+        "spellings": [
+          "チーズ"
+        ],
+        "senses": [
+          [
+            "cheese"
+          ],
+          [
+            "tee (piping)",
+            "T-joint"
+          ],
+          [
+            "cheese (said when taking a photograph)"
+          ]
+        ]
+      }
+    ],
+    "レンネット": [
+      {
+        "seq": 2472770,
+        "common": false,
+        "spellings": [
+          "レンネット"
+        ],
+        "senses": [
+          [
+            "rennet"
+          ]
+        ]
+      }
+    ],
+    "微生物レンネット": [],
+    "豆乳": [
+      {
+        "seq": 1450060,
+        "common": true,
+        "spellings": [
+          "豆乳",
+          "とうにゅう"
+        ],
+        "senses": [
+          [
+            "soy milk"
+          ]
+        ]
+      }
+    ],
+    "コチニール色素": [],
+    "玉ねぎ": [
+      {
+        "seq": 1240670,
+        "common": true,
+        "spellings": [
+          "玉ねぎ",
+          "玉葱",
+          "葱頭",
+          "玉ネギ",
+          "たまねぎ",
+          "タマネギ"
+        ],
+        "senses": [
+          [
+            "onion (Allium cepa)"
+          ]
+        ]
+      }
+    ],
+    "にんにく": [
+      {
+        "seq": 1599940,
+        "common": true,
+        "spellings": [
+          "大蒜",
+          "蒜",
+          "葫",
+          "にんにく",
+          "ニンニク"
+        ],
+        "senses": [
+          [
+            "garlic (Allium sativum)"
+          ]
+        ]
+      },
+      {
+        "seq": 2192680,
+        "common": false,
+        "spellings": [
+          "忍辱",
+          "にんにく"
+        ],
+        "senses": [
+          [
+            "forbearance (in the face of difficulty, persecution, etc.)"
+          ],
+          [
+            "garlic"
+          ]
+        ]
+      }
+    ],
+    "ねぎ": [
+      {
+        "seq": 1467630,
+        "common": true,
+        "spellings": [
+          "葱",
+          "ねぎ",
+          "ネギ"
+        ],
+        "senses": [
+          [
+            "Welsh onion (Allium fistulosum)",
+            "Japanese bunching onion",
+            "green onion",
+            "spring onion",
+            "scallion"
+          ]
+        ]
+      },
+      {
+        "seq": 2249720,
+        "common": false,
+        "spellings": [
+          "禰宜",
+          "祢宜",
+          "袮宜",
+          "ねぎ"
+        ],
+        "senses": [
+          [
+            "senior priest (serving under the chief priest and associate chief priest)"
+          ],
+          [
+            "priest (below chief priest and above junior priest)"
+          ],
+          [
+            "grasshopper",
+            "locust"
+          ]
+        ]
+      }
+    ],
+    "にら": [
+      {
+        "seq": 1467090,
+        "common": false,
+        "spellings": [
+          "韮",
+          "韭",
+          "にら",
+          "みら",
+          "かみら",
+          "ニラ"
+        ],
+        "senses": [
+          [
+            "garlic chives (Allium tuberosum)",
+            "Chinese chives",
+            "Chinese leek"
+          ]
+        ]
+      }
+    ],
+    "キムチ": [
+      {
+        "seq": 1041300,
+        "common": true,
+        "spellings": [
+          "沈菜",
+          "キムチ"
+        ],
+        "senses": [
+          [
+            "kimchi",
+            "kimchee"
+          ]
+        ]
+      }
+    ],
+    "香辛料": [
+      {
+        "seq": 1283050,
+        "common": true,
+        "spellings": [
+          "香辛料",
+          "こうしんりょう"
+        ],
+        "senses": [
+          [
+            "spice",
+            "spices",
+            "condiment"
+          ]
+        ]
+      }
+    ],
+    "ソース": [
+      {
+        "seq": 1075270,
+        "common": true,
+        "spellings": [
+          "ソース"
+        ],
+        "senses": [
+          [
+            "sauce"
+          ],
+          [
+            "Worcestershire sauce"
+          ]
+        ]
+      },
+      {
+        "seq": 2843727,
+        "common": false,
+        "spellings": [
+          "ソース"
+        ],
+        "senses": [
+          [
+            "source (of information)"
+          ],
+          [
+            "source code"
+          ]
+        ]
+      }
+    ],
+    "ケチャップ": [
+      {
+        "seq": 1048100,
+        "common": true,
+        "spellings": [
+          "ケチャップ"
+        ],
+        "senses": [
+          [
+            "ketchup",
+            "catsup"
+          ]
+        ]
+      }
+    ],
+    "ブイヨン": [
+      {
+        "seq": 1113270,
+        "common": false,
+        "spellings": [
+          "ブイヨン"
+        ],
+        "senses": [
+          [
+            "bouillon"
+          ]
+        ]
+      }
+    ],
+    "野菜": [
+      {
+        "seq": 1537370,
+        "common": true,
+        "spellings": [
+          "野菜",
+          "やさい"
+        ],
+        "senses": [
+          [
+            "vegetable"
+          ],
+          [
+            "marijuana",
+            "cannabis"
+          ]
+        ]
+      }
+    ],
+    "カレールウ": [
+      {
+        "seq": 2730440,
+        "common": false,
+        "spellings": [
+          "カレールー",
+          "カレールウ",
+          "カレー・ルー",
+          "カレー・ルウ"
+        ],
+        "senses": [
+          [
+            "curry roux"
+          ]
+        ]
+      }
+    ],
+    "人参": [
+      {
+        "seq": 1367800,
+        "common": true,
+        "spellings": [
+          "人参",
+          "にんじん",
+          "ニンジン"
+        ],
+        "senses": [
+          [
+            "carrot (Daucus carota)"
+          ],
+          [
+            "Asian ginseng (Panax ginseng)"
+          ]
+        ]
+      }
+    ],
+    "じゃがいも": [
+      {
+        "seq": 1005930,
+        "common": true,
+        "spellings": [
+          "じゃが芋",
+          "ジャガ芋",
+          "ジャガ薯",
+          "じゃが薯",
+          "じゃがいも",
+          "ジャガイモ"
+        ],
+        "senses": [
+          [
+            "potato (Solanum tuberosum)"
+          ]
+        ]
+      }
+    ],
+    "大根": [
+      {
+        "seq": 1413730,
+        "common": true,
+        "spellings": [
+          "大根",
+          "だいこん",
+          "だいこ",
+          "ダイコン"
+        ],
+        "senses": [
+          [
+            "daikon (variety of large white Oriental radish, Raphanus sativus var. longipinnatus)"
+          ],
+          [
+            "bad actor",
+            "lousy actor",
+            "wooden actor",
+            "ham actor"
+          ]
+        ]
+      },
+      {
+        "seq": 2663490,
+        "common": false,
+        "spellings": [
+          "大根",
+          "おおね"
+        ],
+        "senses": [
+          [
+            "root",
+            "source",
+            "origin",
+            "basis"
+          ]
+        ]
+      }
+    ],
+    "ごぼう": [
+      {
+        "seq": 1231640,
+        "common": false,
+        "spellings": [
+          "牛蒡",
+          "ごぼう",
+          "ごんぼ",
+          "うまふぶき",
+          "ゴボウ"
+        ],
+        "senses": [
+          [
+            "great burdock (Arctium lappa)",
+            "gobo"
+          ]
+        ]
+      },
+      {
+        "seq": 1268760,
+        "common": false,
+        "spellings": [
+          "五芒",
+          "ごぼう"
+        ],
+        "senses": [
+          [
+            "pentagram"
+          ]
+        ]
+      },
+      {
+        "seq": 1631100,
+        "common": false,
+        "spellings": [
+          "御坊",
+          "御房",
+          "ごぼう"
+        ],
+        "senses": [
+          [
+            "temple",
+            "monk's quarters"
+          ],
+          [
+            "monk"
+          ]
+        ]
+      }
+    ],
+    "れんこん": [
+      {
+        "seq": 1559220,
+        "common": false,
+        "spellings": [
+          "蓮根",
+          "れんこん",
+          "はすね",
+          "レンコン"
+        ],
+        "senses": [
+          [
+            "lotus root"
+          ]
+        ]
+      },
+      {
+        "seq": 2866393,
+        "common": false,
+        "spellings": [
+          "漣痕",
+          "れんこん"
+        ],
+        "senses": [
+          [
+            "ripple mark"
+          ]
+        ]
+      }
+    ],
+    "さつまいも": [
+      {
+        "seq": 1299220,
+        "common": true,
+        "spellings": [
+          "さつま芋",
+          "薩摩芋",
+          "甘薯",
+          "甘藷",
+          "さつまいも",
+          "かんしょ",
+          "サツマイモ"
+        ],
+        "senses": [
+          [
+            "sweet potato (Ipomoea batatas)"
+          ]
+        ]
+      }
+    ],
+    "里芋": [
+      {
+        "seq": 1550780,
+        "common": false,
+        "spellings": [
+          "里芋",
+          "さといも",
+          "サトイモ"
+        ],
+        "senses": [
+          [
+            "taro (Colocasia esculenta)",
+            "dasheen",
+            "eddo"
+          ]
+        ]
+      }
+    ],
+    "こんにゃく": [
+      {
+        "seq": 1571630,
+        "common": false,
+        "spellings": [
+          "蒟蒻",
+          "菎蒻",
+          "こんにゃく",
+          "コンニャク"
+        ],
+        "senses": [
+          [
+            "konnyaku (Amorphophallus konjac)",
+            "konjac",
+            "devil's tongue"
+          ],
+          [
+            "konnyaku jelly",
+            "konjac jelly",
+            "devil's tongue jelly"
+          ]
+        ]
+      }
+    ],
+    "ビート": [
+      {
+        "seq": 1104420,
+        "common": true,
+        "spellings": [
+          "ビート"
+        ],
+        "senses": [
+          [
+            "beet"
+          ]
+        ]
+      },
+      {
+        "seq": 2857865,
+        "common": false,
+        "spellings": [
+          "ビート"
+        ],
+        "senses": [
+          [
+            "beat"
+          ],
+          [
+            "kick (in swimming)",
+            "kicking"
+          ]
+        ]
+      }
+    ],
+    "しょうが": [
+      {
+        "seq": 1379620,
+        "common": true,
+        "spellings": [
+          "生姜",
+          "生薑",
+          "薑",
+          "しょうが",
+          "ショウガ"
+        ],
+        "senses": [
+          [
+            "ginger (Zingiber officinale)"
+          ]
+        ]
+      },
+      {
+        "seq": 1347500,
+        "common": false,
+        "spellings": [
+          "唱歌",
+          "しょうか",
+          "しょうが"
+        ],
+        "senses": [
+          [
+            "singing",
+            "song"
+          ],
+          [
+            "music class (at pre-WWII schools)",
+            "song for music classes"
+          ]
+        ]
+      },
+      {
+        "seq": 1743700,
+        "common": false,
+        "spellings": [
+          "小我",
+          "しょうが"
+        ],
+        "senses": [
+          [
+            "the self",
+            "the ego"
+          ]
+        ]
+      },
+      {
+        "seq": 2224660,
+        "common": false,
+        "spellings": [
+          "小雅",
+          "しょうが"
+        ],
+        "senses": [
+          [
+            "minor festal song (subgenre of the Shi Jing)"
+          ]
+        ]
+      }
+    ],
+    "わさび": [
+      {
+        "seq": 1302710,
+        "common": true,
+        "spellings": [
+          "山葵",
+          "和佐比",
+          "わさび",
+          "ワサビ"
+        ],
+        "senses": [
+          [
+            "wasabi (Wasabia japonica)",
+            "Japanese horseradish"
+          ],
+          [
+            "horseradish (or any blend of wasabi and horseradish)"
+          ]
+        ]
+      }
+    ],
+    "ターメリック": [
+      {
+        "seq": 2500190,
+        "common": false,
+        "spellings": [
+          "ターメリック"
+        ],
+        "senses": [
+          [
+            "turmeric"
+          ]
+        ]
+      }
+    ],
+    "でん粉": [
+      {
+        "seq": 1442710,
+        "common": false,
+        "spellings": [
+          "澱粉",
+          "でん粉",
+          "殿粉",
+          "でんぷん",
+          "デンプン"
+        ],
+        "senses": [
+          [
+            "starch"
+          ]
+        ]
+      }
+    ],
+    "てんさい糖": [
+      {
+        "seq": 2808120,
+        "common": false,
+        "spellings": [
+          "てんさい糖",
+          "甜菜糖",
+          "てん菜糖",
+          "テンサイ糖",
+          "てんさいとう"
+        ],
+        "senses": [
+          [
+            "beet sugar"
+          ]
+        ]
+      }
+    ],
+    "カロテン": [
+      {
+        "seq": 1039280,
+        "common": false,
+        "spellings": [
+          "カロチン",
+          "カロテン"
+        ],
+        "senses": [
+          [
+            "carotene"
+          ]
+        ]
+      }
+    ],
+    "コロッケ": [
+      {
+        "seq": 1051690,
+        "common": true,
+        "spellings": [
+          "コロッケ"
+        ],
+        "senses": [
+          [
+            "croquette"
+          ]
+        ]
+      }
+    ],
+    "なす": [
+      {
+        "seq": 1157130,
+        "common": true,
+        "spellings": [
+          "成す",
+          "なす"
+        ],
+        "senses": [
+          [
+            "to form",
+            "to make",
+            "to constitute"
+          ],
+          [
+            "to build up (e.g. a fortune)",
+            "to create",
+            "to establish"
+          ],
+          [
+            "to accomplish",
+            "to achieve",
+            "to win (fame)",
+            "to gain"
+          ],
+          [
+            "to change (into)",
+            "to convert"
+          ],
+          [
+            "to do",
+            "to commit",
+            "to carry out",
+            "to bring about"
+          ],
+          [
+            "to do intentionally"
+          ]
+        ]
+      },
+      {
+        "seq": 1195240,
+        "common": true,
+        "spellings": [
+          "茄子",
+          "茄",
+          "なす",
+          "なすび",
+          "ナス",
+          "ナスビ"
+        ],
+        "senses": [
+          [
+            "eggplant (Solanum melongena)",
+            "aubergine"
+          ]
+        ]
+      },
+      {
+        "seq": 2861111,
+        "common": true,
+        "spellings": [
+          "為す",
+          "爲す",
+          "なす"
+        ],
+        "senses": [
+          [
+            "to do",
+            "to commit",
+            "to carry out",
+            "to bring about"
+          ]
+        ]
+      },
+      {
+        "seq": 1563800,
+        "common": false,
+        "spellings": [
+          "作す",
+          "做す",
+          "なす",
+          "さくす"
+        ],
+        "senses": [
+          [
+            "to make"
+          ]
+        ]
+      },
+      {
+        "seq": 2824590,
+        "common": false,
+        "spellings": [
+          "生す",
+          "なす"
+        ],
+        "senses": [
+          [
+            "to bear a child",
+            "to give birth (to)"
+          ]
+        ]
+      },
+      {
+        "seq": 2842197,
+        "common": false,
+        "spellings": [
+          "如す",
+          "なす"
+        ],
+        "senses": [
+          [
+            "-like",
+            "resembling",
+            "similar to"
+          ]
+        ]
+      },
+      {
+        "seq": 2864469,
+        "common": false,
+        "spellings": [
+          "済す",
+          "なす"
+        ],
+        "senses": [
+          [
+            "to settle (a debt or matter)",
+            "to pay back (money or goods)"
+          ],
+          [
+            "to fulfill one's obligation of payment",
+            "to pay in full"
+          ]
+        ]
+      }
+    ],
+    "もやし": [
+      {
+        "seq": 1517810,
+        "common": false,
+        "spellings": [
+          "萌やし",
+          "糵",
+          "萌し",
+          "もやし",
+          "モヤシ"
+        ],
+        "senses": [
+          [
+            "bean sprouts"
+          ]
+        ]
+      }
+    ],
+    "いちじく": [
+      {
+        "seq": 1529700,
+        "common": false,
+        "spellings": [
+          "無花果",
+          "映日果",
+          "いちじく",
+          "イチジク",
+          "いちぢく",
+          "むかか",
+          "イチヂク"
+        ],
+        "senses": [
+          [
+            "common fig (Ficus carica)",
+            "fig",
+            "fig tree"
+          ]
+        ]
+      },
+      {
+        "seq": 2263680,
+        "common": false,
+        "spellings": [
+          "一軸",
+          "いちじく"
+        ],
+        "senses": [
+          [
+            "uniaxial"
+          ]
+        ]
+      }
+    ],
+    "カリフラワー": [
+      {
+        "seq": 1038840,
+        "common": false,
+        "spellings": [
+          "カリフラワー"
+        ],
+        "senses": [
+          [
+            "cauliflower"
+          ]
+        ]
+      }
+    ],
+    "きのこ": [
+      {
+        "seq": 1416010,
+        "common": true,
+        "spellings": [
+          "茸",
+          "蕈",
+          "菌",
+          "きのこ",
+          "たけ",
+          "キノコ"
+        ],
+        "senses": [
+          [
+            "mushroom"
+          ]
+        ]
+      },
+      {
+        "seq": 2845400,
+        "common": false,
+        "spellings": [
+          "木の子",
+          "きのこ"
+        ],
+        "senses": [
+          [
+            "kinoko",
+            "mountain-dwelling demon resembling a child"
+          ]
+        ]
+      }
+    ],
+    "酵母": [
+      {
+        "seq": 1282530,
+        "common": true,
+        "spellings": [
+          "酵母",
+          "こうぼ"
+        ],
+        "senses": [
+          [
+            "yeast",
+            "leaven"
+          ]
+        ]
+      }
+    ],
+    "麹": [
+      {
+        "seq": 1285730,
+        "common": true,
+        "spellings": [
+          "麹",
+          "糀",
+          "こうじ",
+          "かむだち"
+        ],
+        "senses": [
+          [
+            "kōji",
+            "malted rice",
+            "malt",
+            "malt-like material from growing mold on rice, barley, beans, etc. (used as a starter to make sake, miso, soy sauce, etc.)"
+          ]
+        ]
+      }
+    ],
+    "パン": [
+      {
+        "seq": 1103090,
+        "common": true,
+        "spellings": [
+          "パン"
+        ],
+        "senses": [
+          [
+            "bread",
+            "(sweet) pastry"
+          ],
+          [
+            "staff of life",
+            "one's bread"
+          ]
+        ]
+      },
+      {
+        "seq": 2827858,
+        "common": false,
+        "spellings": [
+          "パン",
+          "パーン"
+        ],
+        "senses": [
+          [
+            "Pan (god)"
+          ]
+        ]
+      },
+      {
+        "seq": 2850596,
+        "common": false,
+        "spellings": [
+          "パン"
+        ],
+        "senses": [
+          [
+            "pan",
+            "frying pan"
+          ],
+          [
+            "panning (a camera)"
+          ]
+        ]
+      },
+      {
+        "seq": 2850597,
+        "common": false,
+        "spellings": [
+          "パン"
+        ],
+        "senses": [
+          [
+            "pan-"
+          ]
+        ]
+      }
+    ],
+    "はちみつ": [
+      {
+        "seq": 1517860,
+        "common": true,
+        "spellings": [
+          "蜂蜜",
+          "はち蜜",
+          "はちみつ",
+          "はつみつ",
+          "ハチミツ"
+        ],
+        "senses": [
+          [
+            "honey"
+          ]
+        ]
+      }
+    ],
+    "酒": [
+      {
+        "seq": 1329010,
+        "common": true,
+        "spellings": [
+          "酒",
+          "さけ"
+        ],
+        "senses": [
+          [
+            "alcohol",
+            "sake"
+          ]
+        ]
+      },
+      {
+        "seq": 2862891,
+        "common": false,
+        "spellings": [
+          "酒",
+          "ささ"
+        ],
+        "senses": [
+          [
+            "alcohol",
+            "sake"
+          ]
+        ]
+      },
+      {
+        "seq": 2862909,
+        "common": false,
+        "spellings": [
+          "酒",
+          "しゅ"
+        ],
+        "senses": [
+          [
+            "alcohol",
+            "(alcoholic) drink",
+            "liqueur"
+          ]
+        ]
+      },
+      {
+        "seq": 2862910,
+        "common": false,
+        "spellings": [
+          "酒",
+          "さか"
+        ],
+        "senses": [
+          [
+            "alcohol",
+            "sake"
+          ]
+        ]
+      }
+    ],
+    "乳化剤": [
+      {
+        "seq": 1465010,
+        "common": false,
+        "spellings": [
+          "乳化剤",
+          "にゅうかざい"
+        ],
+        "senses": [
+          [
+            "emulsifier"
+          ]
+        ]
+      }
+    ],
+    "香料": [
+      {
+        "seq": 1283160,
+        "common": true,
+        "spellings": [
+          "香料",
+          "こうりょう"
+        ],
+        "senses": [
+          [
+            "flavoring",
+            "flavouring",
+            "spices"
+          ],
+          [
+            "fragrance",
+            "perfume",
+            "incense"
+          ],
+          [
+            "condolence gift"
+          ]
+        ]
+      }
+    ],
+    "調味料": [
+      {
+        "seq": 1429290,
+        "common": true,
+        "spellings": [
+          "調味料",
+          "ちょうみりょう"
+        ],
+        "senses": [
+          [
+            "seasoning",
+            "flavoring",
+            "flavouring",
+            "condiment"
+          ]
+        ]
+      }
+    ],
+    "調味料(アミノ酸等)": [],
+    "たん白加水分解物": [
+      {
+        "seq": 2837805,
+        "common": false,
+        "spellings": [
+          "たん白加水分解物",
+          "蛋白加水分解物",
+          "たんぱく加水分解物",
+          "タンパク加水分解物",
+          "たんぱくかすいぶんかいぶつ"
+        ],
+        "senses": [
+          [
+            "protein hydrolysate",
+            "hydrolyzed protein"
+          ]
+        ]
+      }
+    ],
+    "酵素": [
+      {
+        "seq": 1282510,
+        "common": true,
+        "spellings": [
+          "酵素",
+          "こうそ"
+        ],
+        "senses": [
+          [
+            "enzyme"
+          ]
+        ]
+      }
+    ],
+    "油脂": [
+      {
+        "seq": 1538670,
+        "common": true,
+        "spellings": [
+          "油脂",
+          "ゆし"
+        ],
+        "senses": [
+          [
+            "fats and oils"
+          ]
+        ]
+      }
+    ],
+    "光沢剤": [
+      {
+        "seq": 2684190,
+        "common": false,
+        "spellings": [
+          "光沢剤",
+          "こうたくざい"
+        ],
+        "senses": [
+          [
+            "brightening agent",
+            "glazing agent",
+            "polishing agent"
+          ]
+        ]
+      }
+    ],
+    "L-システイン": [],
+    "ビタミンD": [],
+    "ビタミンA": [],
+    "焼成カルシウム": [],
+    "着色料": [
+      {
+        "seq": 2404140,
+        "common": false,
+        "spellings": [
+          "着色料",
+          "ちゃくしょくりょう"
+        ],
+        "senses": [
+          [
+            "coloring agent",
+            "colorant",
+            "colourant",
+            "(food) coloring",
+            "colouring"
+          ]
+        ]
+      }
+    ],
+    "ワンタン": [
+      {
+        "seq": 1173250,
+        "common": false,
+        "spellings": [
+          "雲呑",
+          "饂飩",
+          "ワンタン"
+        ],
+        "senses": [
+          [
+            "wonton (Chinese dumpling)",
+            "won ton",
+            "wantan",
+            "wanton",
+            "wuntun"
+          ]
+        ]
+      }
+    ],
+    "水": [
+      {
+        "seq": 1371260,
+        "common": true,
+        "spellings": [
+          "水",
+          "みず"
+        ],
+        "senses": [
+          [
+            "water (esp. cool or cold)"
+          ],
+          [
+            "fluid (esp. in an animal tissue)",
+            "liquid"
+          ],
+          [
+            "flood",
+            "floodwaters"
+          ],
+          [
+            "water offered to wrestlers just prior to a bout"
+          ],
+          [
+            "break granted to wrestlers engaged in a prolonged bout"
+          ]
+        ]
+      },
+      {
+        "seq": 2153780,
+        "common": false,
+        "spellings": [
+          "水",
+          "すい"
+        ],
+        "senses": [
+          [
+            "Wednesday"
+          ],
+          [
+            "shaved ice (served with flavored syrup)"
+          ],
+          [
+            "water (fifth of the five elements)"
+          ]
+        ]
+      }
+    ],
+    "氷": [
+      {
+        "seq": 1488840,
+        "common": true,
+        "spellings": [
+          "氷",
+          "凍り",
+          "こおり"
+        ],
+        "senses": [
+          [
+            "ice"
+          ],
+          [
+            "shaved ice (usually served with flavored simple syrup)"
+          ]
+        ]
+      },
+      {
+        "seq": 1488850,
+        "common": false,
+        "spellings": [
+          "氷",
+          "冰",
+          "ひ"
+        ],
+        "senses": [
+          [
+            "ice"
+          ],
+          [
+            "hail"
+          ]
+        ]
+      },
+      {
+        "seq": 1583430,
+        "common": false,
+        "spellings": [
+          "氷柱",
+          "氷",
+          "つらら",
+          "ひょうちゅう"
+        ],
+        "senses": [
+          [
+            "icicle"
+          ],
+          [
+            "ice pillar (for cooling a room)"
+          ],
+          [
+            "ice"
+          ]
+        ]
+      }
+    ],
+    "塩": [
+      {
+        "seq": 1576630,
+        "common": true,
+        "spellings": [
+          "塩",
+          "しお"
+        ],
+        "senses": [
+          [
+            "salt",
+            "common salt",
+            "table salt",
+            "sodium chloride"
+          ],
+          [
+            "hardship",
+            "toil",
+            "trouble"
+          ],
+          [
+            "saltiness"
+          ],
+          [
+            "cold",
+            "unwelcoming",
+            "indifferent"
+          ]
+        ]
+      },
+      {
+        "seq": 2847901,
+        "common": false,
+        "spellings": [
+          "塩",
+          "えん"
+        ],
+        "senses": [
+          [
+            "salt (e.g. sodium chloride, calcium sulfate, etc.)"
+          ],
+          [
+            "chloride"
+          ]
+        ]
+      }
+    ],
+    "砂糖": [
+      {
+        "seq": 1291600,
+        "common": true,
+        "spellings": [
+          "砂糖",
+          "さとう"
+        ],
+        "senses": [
+          [
+            "sugar"
+          ]
+        ]
+      }
+    ],
+    "甘味料": [
+      {
+        "seq": 1213590,
+        "common": true,
+        "spellings": [
+          "甘味料",
+          "かんみりょう"
+        ],
+        "senses": [
+          [
+            "sweetener (sugar, honey, saccharin, maltose, etc.)",
+            "sweetening agent",
+            "sweetening"
+          ]
+        ]
+      }
+    ],
+    "小麦粉": [
+      {
+        "seq": 1348650,
+        "common": true,
+        "spellings": [
+          "小麦粉",
+          "こむぎこ"
+        ],
+        "senses": [
+          [
+            "wheat flour"
+          ]
+        ]
+      }
+    ],
+    "大豆": [
+      {
+        "seq": 1414680,
+        "common": true,
+        "spellings": [
+          "大豆",
+          "だいず",
+          "ダイズ"
+        ],
+        "senses": [
+          [
+            "soya bean (Glycine max)",
+            "soybean",
+            "soy"
+          ]
+        ]
+      }
+    ],
+    "醤油": [
+      {
+        "seq": 1595020,
+        "common": true,
+        "spellings": [
+          "醤油",
+          "醬油",
+          "正油",
+          "しょう油",
+          "しょうゆ",
+          "しょうゆう"
+        ],
+        "senses": [
+          [
+            "soy sauce",
+            "soya sauce",
+            "shoyu"
+          ]
+        ]
+      }
+    ],
+    "ごま": [
+      {
+        "seq": 1267560,
+        "common": true,
+        "spellings": [
+          "胡麻",
+          "ごま",
+          "ゴマ"
+        ],
+        "senses": [
+          [
+            "sesame seeds"
+          ],
+          [
+            "sesame (Sesamum indicum)"
+          ]
+        ]
+      },
+      {
+        "seq": 1271590,
+        "common": false,
+        "spellings": [
+          "護摩",
+          "ごま"
+        ],
+        "senses": [
+          [
+            "homa",
+            "Buddhist rite of burning wooden sticks to ask a deity for blessings"
+          ]
+        ]
+      }
+    ],
+    "植物油脂": [
+      {
+        "seq": 2656910,
+        "common": false,
+        "spellings": [
+          "植物油脂",
+          "しょくぶつゆし"
+        ],
+        "senses": [
+          [
+            "vegetable fats and oils"
+          ]
+        ]
+      }
+    ],
+    "アーモンド": [
+      {
+        "seq": 1013830,
+        "common": true,
+        "spellings": [
+          "アーモンド",
+          "アモンド"
+        ],
+        "senses": [
+          [
+            "almond (Prunus dulcis)"
+          ]
+        ]
+      }
+    ],
+    "果物": [
+      {
+        "seq": 1193060,
+        "common": true,
+        "spellings": [
+          "果物",
+          "菓物",
+          "くだもの",
+          "かぶつ"
+        ],
+        "senses": [
+          [
+            "fruit"
+          ]
+        ]
+      }
+    ],
+    "トマト": [
+      {
+        "seq": 1085420,
+        "common": true,
+        "spellings": [
+          "トマト"
+        ],
+        "senses": [
+          [
+            "tomato (Solanum lycopersicum)"
+          ]
+        ]
+      }
+    ],
+    "こしょう": [
+      {
+        "seq": 1266510,
+        "common": true,
+        "spellings": [
+          "呼称",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "name",
+            "designation",
+            "denomination",
+            "naming",
+            "giving a name"
+          ]
+        ]
+      },
+      {
+        "seq": 1267180,
+        "common": true,
+        "spellings": [
+          "故障",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "fault",
+            "trouble",
+            "breakdown",
+            "failure",
+            "being out of order"
+          ],
+          [
+            "damage (to a part of the body)",
+            "injury",
+            "hurt"
+          ],
+          [
+            "problem",
+            "hitch",
+            "obstacle",
+            "hindrance"
+          ],
+          [
+            "objection",
+            "protest"
+          ]
+        ]
+      },
+      {
+        "seq": 1267290,
+        "common": true,
+        "spellings": [
+          "湖沼",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "lake",
+            "marsh",
+            "wetland",
+            "inland waters"
+          ]
+        ]
+      },
+      {
+        "seq": 1267600,
+        "common": true,
+        "spellings": [
+          "胡椒",
+          "こしょう",
+          "コショウ",
+          "コショー"
+        ],
+        "senses": [
+          [
+            "pepper"
+          ]
+        ]
+      },
+      {
+        "seq": 1265550,
+        "common": false,
+        "spellings": [
+          "古称",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "old name",
+            "former name"
+          ]
+        ]
+      },
+      {
+        "seq": 1267780,
+        "common": false,
+        "spellings": [
+          "誇称",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "boasting",
+            "exaggeration"
+          ]
+        ]
+      },
+      {
+        "seq": 1743990,
+        "common": false,
+        "spellings": [
+          "小姓",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "(noble's) page"
+          ]
+        ]
+      },
+      {
+        "seq": 2104700,
+        "common": false,
+        "spellings": [
+          "扈従",
+          "こしょう",
+          "こじゅう"
+        ],
+        "senses": [
+          [
+            "attendance (on one's superior)",
+            "accompanying"
+          ]
+        ]
+      },
+      {
+        "seq": 2565130,
+        "common": false,
+        "spellings": [
+          "古松",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "old pine"
+          ]
+        ]
+      },
+      {
+        "seq": 2704570,
+        "common": false,
+        "spellings": [
+          "虎嘯",
+          "こしょう"
+        ],
+        "senses": [
+          [
+            "tiger's howling"
+          ],
+          [
+            "being out and active in the world (of a hero, etc.)"
+          ]
+        ]
+      }
+    ],
+    "茶": [
+      {
+        "seq": 1422570,
+        "common": true,
+        "spellings": [
+          "茶",
+          "ちゃ"
+        ],
+        "senses": [
+          [
+            "tea"
+          ],
+          [
+            "tea plant (Camellia sinensis)"
+          ],
+          [
+            "tea preparation",
+            "making tea"
+          ],
+          [
+            "brown"
+          ],
+          [
+            "mockery"
+          ]
+        ]
+      }
+    ],
+    "昆布": [
+      {
+        "seq": 1579150,
+        "common": true,
+        "spellings": [
+          "昆布",
+          "こんぶ",
+          "こぶ",
+          "コンブ"
+        ],
+        "senses": [
+          [
+            "kombu (usu. Saccharina japonica)",
+            "konbu",
+            "kelp",
+            "any edible species from the family Laminariaceae"
+          ]
+        ]
+      }
+    ],
+    "クエン酸": [
+      {
+        "seq": 1568020,
+        "common": false,
+        "spellings": [
+          "クエン酸",
+          "枸櫞酸",
+          "くえんさん",
+          "クエンさん"
+        ],
+        "senses": [
+          [
+            "citric acid"
+          ]
+        ]
+      }
+    ]
+  },
+  "license": "JMdict © Electronic Dictionary Research and Development Group (EDRDG), CC BY-SA 4.0. https://www.edrdg.org/edrdg/licence.html"
+}
