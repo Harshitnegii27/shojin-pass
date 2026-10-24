@@ -39,7 +39,18 @@ describe('rulebook review checklist', () => {
   it('shows the diets an entry blocks', () => {
     const pork = doc.slice(doc.indexOf('`pork`: '), doc.indexOf('`beef`: '));
     expect(pork).toContain('Red (avoid) for: all diets');
-    expect(pork).toContain('Status: draft, 0/2 reviewers');
+  });
+
+  it('shows the review status: draft with the count, reviewed with the names', () => {
+    const draftData = JSON.parse(JSON.stringify(data)); // independent of the real review state
+    for (const e of draftData.ingredients) e.reviewedBy = [];
+    draftData.ingredients[1].reviewedBy = ['Asha'];
+    draftData.ingredients[2].reviewedBy = ['Asha', 'Ben'];
+    const d = buildReviewDoc(draftData);
+    const section = (i) => d.slice(d.indexOf(`\`${draftData.ingredients[i].id}\`: `), d.indexOf(`\`${draftData.ingredients[i + 1].id}\`: `));
+    expect(section(0)).toContain('Status: draft, 0/2 reviewers');
+    expect(section(1)).toContain('Status: draft, 1/2 reviewers (Asha)');
+    expect(section(2)).toContain('Status: reviewed (Asha, Ben)');
   });
 
   it('colourFor: forbidden beats asked; neither is green', () => {

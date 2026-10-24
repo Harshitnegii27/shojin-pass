@@ -30,6 +30,13 @@ JMdict entries for those terms, built with
 [JMdict_e.gz](http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz); keep it outside the repo). The engine
 never reads it, and terms JMdict doesn't have show `(not in JMdict)`.
 
+Reviewers fill the `reviewer1`, `reviewer1_ok`, `reviewer2`, `reviewer2_ok` and `correction_notes`
+columns in the Sheet. Download it as CSV and run `npm run review:import -- path/to/export.csv` (a dry
+run that only prints a report), then add `--write` to record the sign-offs in `reviewedBy` in
+`rulebook/ingredients.json`. A name counts when its `_ok` cell is yes, ok, TRUE, 1 or ✓. A row with
+correction notes, or with a reviewer who didn't say yes, adds nobody and is listed in the report.
+Tags, spellings and meanings are never changed by the import.
+
 **JMdict credit:** this project uses the [JMdict](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project)
 dictionary files. These files are the property of the
 [Electronic Dictionary Research and Development Group](https://www.edrdg.org/) (EDRDG) and are used in

@@ -11,7 +11,8 @@
     "validate": "node scripts/validateRulebook.js",
     "validate:strict": "node scripts/validateRulebook.js --strict",
     "eval:text": "node scripts/evalText.js",
-    "review:doc": "node scripts/genRulebookReview.js"
+    "review:doc": "node scripts/genRulebookReview.js",
+    "review:import": "node scripts/importRulebookReview.js"
   },
   "engines": {
     "node": ">=20"

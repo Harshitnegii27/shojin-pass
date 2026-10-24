@@ -15,8 +15,10 @@ describe('rulebook files', () => {
     expect(validate(fresh(), { strict: true }).errors.some((e) => e.includes('fewer than two reviewers'))).toBe(true);
   });
   it('without review, no ingredient is trusted, so nothing can be green', () => {
-    const rb = buildRulebook(fresh(), { allowUnreviewed: false });
-    expect(rb.skippedUnreviewed).toBeGreaterThan(0);
+    const draft = fresh(); // whatever the real review state, start from an unreviewed rulebook
+    for (const e of draft.ingredients) e.reviewedBy = [];
+    const rb = buildRulebook(draft, { allowUnreviewed: false });
+    expect(rb.skippedUnreviewed).toBe(draft.ingredients.length);
     const r = analyzeLabel({ raw: '原材料名：小麦粉、砂糖\n内容量：1' }, resolveProfile({ preset: 'vegetarian' }, rb), rb);
     expect(r.verdict).toBe('amber');
   });
